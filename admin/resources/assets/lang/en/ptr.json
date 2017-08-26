@@ -1,0 +1,96 @@
+{
+  "list": {
+    "TITLE": "rDNS PTRs",
+    "heading": {
+      "IP": "IP",
+      "PTR": "PTR",
+      "ENTITY_ID": "Entity",
+      "ACTIONS": "Actions"
+    },
+    "filter": {
+      "search": {
+        "LABEL": "Search",
+        "PLACEHOLDER": "Search"
+      }
+    }
+  },
+  "view": {
+    "title": {
+      "PAGE": "View rDNS PTR"
+    },
+    "overview": {
+      "TITLE": "Overview",
+      "IP": "IP Address",
+      "PTR": "PTR",
+      "ENTITIES": "Entities"
+    },
+    "body": {
+      "TITLE": "rDNS PTR Body"
+    }
+  },
+  "form": {
+    "title": {
+      "ADD": "Add",
+      "EDIT": "Edit rDNS PTR for {{name}}",
+      "SAVE": "Save",
+      "LABEL": "rDNS Management"
+    },
+    "ip": {
+      "LABEL": "IP",
+      "PLACEHOLDER": "Enter IP"
+    },
+    "ptr": {
+      "LABEL": "PTR",
+      "PLACEHOLDER": "Enter PTR"
+    },
+    "entity_id": {
+      "LABEL": "Entity",
+      "PLACEHOLDER": "Enter Entity"
+    },
+    "list": {
+      "ip": {
+        "LABEL": "IP"
+      },
+      "ptr": {
+        "LABEL": "PTR RECORD"
+      }
+    }
+  },
+  "modal": {
+    "delete": {
+      "TITLE": "Delete rDNS PTR",
+      "BODY": "Are you sure you wish to delete this rDNS PTR?",
+      "CANCEL": "Cancel",
+      "SUBMIT": "Delete PTR"
+    }
+  },
+  "action": {
+    "EDIT": "Edit"
+  },
+  "buttons": {
+    "DELETE": "Delete"
+  },
+  "dashboard": {
+    "add": {
+      "TITLE" : "Add PTR"
+    },
+    "input": {
+      "IP": {
+        "TITLE": "IP Address",
+        "PLACEHOLDER": "IP Address"
+      },
+      "PTR": {
+        "TITLE": "PTR",
+        "PLACEHOLDER": "PTR"
+      }
+    },
+    "submit": {
+      "add": {
+        "TITLE": "Add"
+      }
+    }
+  },
+  "alert": {
+    "alert-info": "Add an IP Entity to manage rDNS for this server."
+  }
+}

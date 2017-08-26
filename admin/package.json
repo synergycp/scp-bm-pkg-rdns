@@ -1,0 +1,14 @@
+{
+  "name": "scp-package-rdns-admin",
+  "version": "0.0.1",
+  "description": "Synergy Control Panel RDNS Package Admin Front End",
+  "author": "synergycontrolpanel",
+  "devDependencies": {
+    "scp-ng-gulp": "git+ssh://git@github.com/cabloo/scp-ng-gulp.git"
+  },
+  "scripts": {
+    "prestart": "",
+    "start": "npm install",
+    "poststart": "gulp"
+  }
+}

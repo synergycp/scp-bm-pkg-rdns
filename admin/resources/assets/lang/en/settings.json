@@ -1,0 +1,10 @@
+{
+  "api": {
+    "host": {
+      "LABEL": "API Host"
+    },
+    "key": {
+      "LABEL": "API Key"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+block title
+  span(
+    translate='pkg.rdns.admin.ptr.form.title.EDIT'
+    translate-value-name='{{vm.edit.input.ip}}'
+  )
+
+block form
+  ptr-form(form="vm.edit")
+
+block append right-side
+  ptr-buttons(ptr="vm.edit.input")

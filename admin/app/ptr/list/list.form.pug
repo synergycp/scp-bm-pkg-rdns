@@ -1,0 +1,20 @@
+doctype html
+include /node_modules/scp-ng-gulp/resources/pug/mixins/form
+
+table.table
+  tbody
+    tr(
+      ng-repeat="ptr in ptrListForm.ptrs"
+    )
+      td
+        input.form-control(
+          placeholder="{{ 'pkg.rdns.admin.ptr.dashboard.input.IP.PLACEHOLDER' | translate }}"
+          ng-model="ptr.ip"
+          ng-change="ptrListForm.addRow(ptr, $index)"
+        )
+      td
+        input.form-control(
+          placeholder="{{ 'pkg.rdns.admin.ptr.dashboard.input.PTR.PLACEHOLDER' | translate }}"
+          ng-model="ptr.ptr"
+          ng-change="ptrListForm.addRow(ptr, $index)"
+        )

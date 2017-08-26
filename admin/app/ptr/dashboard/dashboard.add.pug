@@ -1,0 +1,28 @@
+include /node_modules/scp-ng-gulp/resources/pug/mixins/panel
+include /node_modules/scp-ng-gulp/resources/pug/mixins/form
+
+form.form-horizontal(
+  ng-class="panel.loader.class"
+  ng-submit="panel.submit()"
+)
+  .loader
+  +panel("{{ 'pkg.rdns.admin.ptr.dashboard.add.TITLE' | translate }}")
+    .panel-body(ng-repeat="ptr in panel.ptrs")
+      .col-sm-6
+        input.form-control(
+          placeholder="{{ 'pkg.rdns.admin.ptr.dashboard.input.IP.PLACEHOLDER' | translate }}"
+          ng-model="ptr.ip"
+          ng-change="panel.addRow(ptr, $index)"
+        )
+      .col-sm-6
+        input.form-control(
+          placeholder="{{ 'pkg.rdns.admin.ptr.dashboard.input.PTR.PLACEHOLDER' | translate }}"
+          ng-model="ptr.ptr"
+          ng-change="panel.addRow(ptr, $index)"
+        )
+    .panel-footer.clearfix
+      .pull-right
+        button.btn.btn-primary(
+          type="submit"
+          translate="pkg.rdns.admin.ptr.dashboard.submit.add.TITLE"
+        )

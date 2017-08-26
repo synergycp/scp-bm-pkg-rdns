@@ -1,0 +1,36 @@
+doctype html
+include /node_modules/scp-ng-gulp/resources/pug/mixins/form
+
+form.panel.panel-default(
+    ng-submit="save()",
+    ng-class="loader.class"
+)
+    .loader
+    .panel-heading(ng-click="isExpanded = !isExpanded")
+        .btn-group.btn-group-xs.pull-right
+            a.btn.btn-default
+                span.fa(ng-class="isExpanded ? 'fa-minus' : 'fa-plus'")
+        h3.panel-title(translate="pkg.rdns.admin.ptr.form.title.LABEL")
+    .panel-body(ng-class="isExpanded ? '' : 'hidden'")
+        table.table(ng-if="ptrs.length")
+            thead
+                tr
+                    th(translate="pkg.rdns.admin.ptr.form.list.ip.LABEL")
+                    th(translate="pkg.rdns.admin.ptr.form.list.ptr.LABEL")
+            tbody
+                tr(
+                    ng-repeat="ptr in ptrs"
+                )
+                    td.v-mid(ng-bind="ptr.ip")
+                    td
+                        input.form-control(
+                        ng-model="ptr.ptr",
+                        ng-change="change(ptr)"
+                        )
+        span(
+            ng-if="!ptrs.length"
+            translate="pkg.rdns.admin.ptr.alert.alert-info"
+        )
+    .panel-footer.clearfix(ng-if="ptrs.length" ng-class="isExpanded ? '' : 'hidden'")
+        .pull-right
+            button.btn.btn-primary(translate="pkg.rdns.admin.ptr.form.title.SAVE")
