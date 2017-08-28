@@ -38,8 +38,8 @@ class ServerService
 
         return new ServerControl(
             $this->http,
-            $settings['pkg.rdns.api.host'],
-            $settings['pkg.rdns.api.key']
+            $settings->{'pkg.rdns.api.host'},
+            $settings->{'pkg.rdns.api.key'}
         );
     }
 }

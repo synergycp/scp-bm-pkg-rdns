@@ -27,9 +27,6 @@ class Ptr
 
     protected $table = 'pkg_rdns_ptrs';
 
-    protected $casts = [
-    ];
-
     protected $fillable = [
         'ip', 'ptr', 'entity_id',
     ];
@@ -50,5 +47,25 @@ class Ptr
     public function entity()
     {
         return $this->belongsTo(Entity::class);
+    }
+
+    /**
+     * @param string $value
+     */
+    public function setIpAttribute($value)
+    {
+        $this->attributes['ip'] = $value ? inet_pton($value) : null;
+    }
+
+    /**
+     * @param string $value Hexadecimal representation of IP
+     *
+     * @return string|void
+     */
+    public function getIpAttribute($value)
+    {
+        if (strlen($value)) {
+            return inet_ntop($value);
+        }
     }
 }

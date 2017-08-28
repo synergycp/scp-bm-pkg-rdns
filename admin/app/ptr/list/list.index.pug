@@ -1,4 +1,5 @@
 extends /node_modules/scp-ng-gulp/resources/pug/list-page
+include /node_modules/scp-ng-gulp/resources/pug/mixins/form
 include /node_modules/scp-ng-gulp/resources/pug/mixins/list
 
 block list
@@ -19,12 +20,27 @@ block list
     list-footer
 
 block bottom-left
-  +create-form("{{ 'pkg.rdns.admin.ptr.form.title.SAVE' | translate }}", 'ptr-create-form')
+  +create-form("{{ 'pkg.rdns.admin.ptr.form.TITLE' | translate }}", 'ptr-create-form')
     ptr-list-form(form="vm.create")
+
+  form(ng-submit="vm.import.submit()")
+    +panel("pkg.rdns.admin.ptr.import.TITLE")
+      .panel-body
+        +label("{{ 'pkg.rdns.admin.ptr.import.file.LABEL' | translate }}", 'file')
+          input(
+            type="file"
+            ngf-select
+            ng-model="vm.import.file"
+            ng-change='vm.import.file.progress=0'
+          )
+          uib-progressbar(max="100" value='vm.import.file.progress' ng-if="vm.import.file")
+            span(ng-bind='vm.import.file.progress+\'%\'')
+      .panel-footer.clearfix
+        input.btn.btn-primary.pull-right(type="submit")
 
 block bottom-right
   logs(
-    heading="Ptr Logs"
+    heading="PTR Logs"
     filter="vm.logs.filter"
     listen-to="vm.list"
   )

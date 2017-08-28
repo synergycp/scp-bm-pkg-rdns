@@ -2,8 +2,6 @@
 
 namespace Packages\Rdns\App\Ptr;
 
-use App\Entity\LookupService;
-use App\Ip\IpService;
 use App\Support\Http\UpdateService;
 use Illuminate\Support\Collection;
 
@@ -17,25 +15,25 @@ class PtrUpdateService
     protected $requestClass = PtrFormRequest::class;
 
     /**
-     * @var LookupService
+     * @var PtrService
      */
-    private $lookup;
+    private $ptr;
 
     /**
-     * @var IpService
+     * @var PtrRepository
      */
-    private $ips;
+    private $ptrs;
 
     /**
-     * SyncToDnsServer constructor.
+     * PtrUpdateService constructor.
      *
-     * @param LookupService $lookup
-     * @param IpService     $ips
+     * @param PtrService    $ptr
+     * @param PtrRepository $ptrs
      */
-    public function boot(LookupService $lookup, IpService $ips)
+    public function boot(PtrService $ptr, PtrRepository $ptrs)
     {
-        $this->lookup = $lookup;
-        $this->ips = $ips;
+        $this->ptr = $ptr;
+        $this->ptrs = $ptrs;
     }
 
     public function afterCreate(Collection $items)
@@ -83,8 +81,19 @@ class PtrUpdateService
     {
         $inputs = [
             'ip' => $ip = $this->input('ip'),
-            'entity_id' => $this->getEntityId($ip),
+            'entity_id' => $entityId = $this->ptr->getEntityId($ip),
         ];
+
+        if ($existing = $this->ptrs->byIp($ip)) {
+            $items->each(function (Ptr $item) use ($existing) {
+                $item->id = $existing->id;
+                $item->exists = true;
+            });
+        }
+
+        if ($this->auth->is('client') && !$entityId) {
+            abort(400, 'You do not have access to that IP.');
+        }
 
         $this->successItems(
             'pkg.rdns::ptr.changed',
@@ -93,27 +102,5 @@ class PtrUpdateService
                 ->reject([$this, 'isCreating']),
             ['field' => 'IP']
         );
-    }
-
-    /**
-     * @param string $ip
-     *
-     * @return int|null
-     */
-    private function getEntityId($ip)
-    {
-        $range = $this->ips->make($ip);
-        $entity = $this
-            ->lookup
-            ->overlapping($range)
-            ->get()
-            ->first()
-        ;
-
-        if (!$entity) {
-            return null;
-        }
-
-        return $entity->getKey();
     }
 }

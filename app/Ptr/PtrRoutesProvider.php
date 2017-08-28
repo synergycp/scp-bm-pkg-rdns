@@ -9,7 +9,7 @@ use Illuminate\Routing\Router;
  * Routes regarding Ptr.
  */
 class PtrRoutesProvider
-extends RouteServiceProvider
+    extends RouteServiceProvider
 {
     /**
      * @var string
@@ -22,22 +22,23 @@ extends RouteServiceProvider
     public function bootRoutes()
     {
         $base = implode('.', ['pkg', $this->package, '']);
-        $this->sso->map(Report::class, $base.'ptr');
+        $this->sso->map(Report::class, $base . 'ptr');
 
         $this->loadTranslationsFrom(
-            $this->basePath().'/resources/lang',
-            'pkg.'.$this->folder()
+            $this->basePath() . '/resources/lang',
+            'pkg.' . $this->folder()
         );
     }
 
     /**
-     * @param Router $router
+     * @return string
      */
-    protected function api(Router $router)
+    protected function basePath()
     {
-        $router->resource(
-            'ptr',
-            PtrController::class
+        return sprintf(
+            '%s/packages/%s',
+            $this->app->basePath(),
+            $this->folder()
         );
     }
 
@@ -50,14 +51,18 @@ extends RouteServiceProvider
     }
 
     /**
-     * @return string
+     * @param Router $router
      */
-    protected function basePath()
+    protected function api(Router $router)
     {
-        return sprintf(
-            '%s/packages/%s',
-            $this->app->basePath(),
-            $this->folder()
+        $router->resource(
+            'ptr',
+            PtrController::class
+        );
+
+        $router->post(
+            'ptr/zone',
+            Zone\ZoneController::class . '@store'
         );
     }
 }

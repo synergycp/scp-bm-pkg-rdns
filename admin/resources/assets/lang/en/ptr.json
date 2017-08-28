@@ -28,13 +28,18 @@
       "TITLE": "rDNS PTR Body"
     }
   },
+  "import": {
+    "TITLE": "Import Zone File",
+    "file": {
+      "LABEL": "Zone File"
+    }
+  },
   "form": {
-    "title": {
-      "ADD": "Add",
-      "EDIT": "Edit rDNS PTR for {{name}}",
-      "SAVE": "Save",
-      "LABEL": "rDNS Management"
-    },
+    "ADD": "Add",
+    "EDIT": "Edit rDNS PTR for {{name}}",
+    "TITLE": "Create rDNS PTRs",
+    "LABEL": "rDNS Management",
+    "SAVE": "Save",
     "ip": {
       "LABEL": "IP",
       "PLACEHOLDER": "Enter IP"

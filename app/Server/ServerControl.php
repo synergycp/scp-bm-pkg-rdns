@@ -43,7 +43,7 @@ class ServerControl
      */
     public function createPtr($ip, $ptr)
     {
-        return $this->request('POST', '/ptr', [
+        return $this->request('POST', 'ptr', [
             'ip' => $ip,
             'ptr' => $ptr,
         ]);
@@ -51,7 +51,7 @@ class ServerControl
 
     public function deletePtr($ip)
     {
-        return $this->request('DELETE', '/ptr/'.$ip);
+        return $this->request('DELETE', 'ptr/'.$ip);
     }
 
     /**
@@ -67,7 +67,9 @@ class ServerControl
             'http://%s/%s?key=%s',
             $this->host,
             $uri,
-            $this->key
-        ));
+            urlencode($this->key)
+        ), [
+            'json' => $data,
+        ]);
     }
 }

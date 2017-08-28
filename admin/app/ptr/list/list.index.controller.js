@@ -9,7 +9,7 @@
   /**
    * @ngInject
    */
-  function PtrIndexCtrl(PtrList, ListFilter, _) {
+  function PtrIndexCtrl(PtrList, ListFilter, ApiUpload, _) {
     var vm = this;
 
     vm.list = PtrList();
@@ -26,12 +26,25 @@
       },
     };
 
+    vm.import = {
+      file: null,
+      submit: importFile,
+    };
+
     activate();
 
     ////////////
 
     function activate() {
       vm.list.load();
+    }
+
+    function importFile() {
+      ApiUpload.post('pkg/rdns/ptr/zone', vm.import.file, {
+        file: vm.import.file,
+      }).then(function() {
+        vm.list.load();
+      });
     }
 
     function create() {
@@ -42,8 +55,6 @@
           .create(item)
         ;
       });
-
     }
-
   }
 })();

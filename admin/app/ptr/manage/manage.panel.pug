@@ -10,7 +10,7 @@ form.panel.panel-default(
         .btn-group.btn-group-xs.pull-right
             a.btn.btn-default
                 span.fa(ng-class="isExpanded ? 'fa-minus' : 'fa-plus'")
-        h3.panel-title(translate="pkg.rdns.admin.ptr.form.title.LABEL")
+        h3.panel-title(translate="pkg.rdns.admin.ptr.form.LABEL")
     .panel-body(ng-class="isExpanded ? '' : 'hidden'")
         table.table(ng-if="ptrs.length")
             thead
@@ -33,4 +33,4 @@ form.panel.panel-default(
         )
     .panel-footer.clearfix(ng-if="ptrs.length" ng-class="isExpanded ? '' : 'hidden'")
         .pull-right
-            button.btn.btn-primary(translate="pkg.rdns.admin.ptr.form.title.SAVE")
+            button.btn.btn-primary(translate="pkg.rdns.admin.ptr.form.SAVE")
