@@ -7,10 +7,10 @@ form.panel.panel-default(
 )
     .loader
     .panel-heading(ng-click="isExpanded = !isExpanded")
+        h3.panel-title(translate="pkg.rdns.admin.ptr.form.LABEL")
         .btn-group.btn-group-xs.pull-right
             a.btn.btn-default
                 span.fa(ng-class="isExpanded ? 'fa-minus' : 'fa-plus'")
-        h3.panel-title(translate="pkg.rdns.admin.ptr.form.LABEL")
     .panel-body(ng-class="isExpanded ? '' : 'hidden'")
         table.table(ng-if="ptrs.length")
             thead
