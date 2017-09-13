@@ -11,7 +11,7 @@
    * @ngInject
    */
   function addRdnsDashboardRepo(Dashboard) {
-      Dashboard.add('RdnsDashboardRepo');
+      //Dashboard.add('RdnsDashboardRepo');
   }
 
   /**
