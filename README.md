@@ -15,14 +15,8 @@ wget https://install.synergycp.com/bm/packages/dns-http-control-bind.tgz -O - | 
 ./bin/install.sh
 ```
 
-2. Install the rDNS package on SynergyCP. As root:
-
-```bash
-sudo /scp/bin/scp-package rdns
-```
-
-3. Go into the SynergyCP application and add the rDNS setting values shown at the end of the DNS Server install.
-4. Add an rDNS PTR from the dashboard of SynergyCP and make sure it works:
+2. Go into the SynergyCP application and add the rDNS setting values shown at the end of the DNS Server install.
+3. Add an rDNS PTR from the dashboard of SynergyCP and make sure it works:
 
 ```bash
 TEST_IP=10.0.0.1
