@@ -54,6 +54,7 @@ wget https://install.synergycp.com/bm/packages/dns-http-control-bind.tgz -O - | 
 ./bin/install.sh
 ```
 
+<<<<<<< HEAD
 ## Setting up the Package on SynergyCP
 1. Install the rDNS package on SynergyCP. As a sudo user (or run as root user and remove sudo):
 
