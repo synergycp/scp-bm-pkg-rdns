@@ -5,6 +5,13 @@
     },
     "key": {
       "LABEL": "API Key"
+    },
+    "type": {
+      "LABEL": "API Type"
     }
+  },
+  "nameservers": {
+    "LABEL": "Name Servers",
+    "PLACEHOLDER": "Comma-separated list of all public-facing nameservers. The master nameserver should be listed first. Example: hostmaster.synergycp.com, ns1.synergycp.com, ns2.synergycp.com"
   }
 }

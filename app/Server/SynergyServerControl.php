@@ -4,7 +4,7 @@ namespace Packages\Rdns\App\Server;
 
 use GuzzleHttp\Client;
 
-class ServerControl
+class SynergyServerControl implements IServerControl
 {
     /**
      * @var Client
@@ -38,12 +38,10 @@ class ServerControl
     /**
      * @param $ip
      * @param $ptr
-     *
-     * @return \Psr\Http\Message\ResponseInterface
      */
     public function createPtr($ip, $ptr)
     {
-        return $this->request('POST', 'ptr', [
+        $this->request('POST', 'ptr', [
             'ip' => $ip,
             'ptr' => $ptr,
         ]);
@@ -51,19 +49,17 @@ class ServerControl
 
     public function deletePtr($ip)
     {
-        return $this->request('DELETE', 'ptr/'.$ip);
+        $this->request('DELETE', 'ptr/'.$ip);
     }
 
     /**
      * @param string     $method
      * @param string     $uri
      * @param array|null $data
-     *
-     * @return \Psr\Http\Message\ResponseInterface
      */
     private function request($method, $uri, array $data = null)
     {
-        return $this->http->request($method, sprintf(
+        $this->http->request($method, sprintf(
             'http://%s/%s?key=%s',
             $this->host,
             $uri,

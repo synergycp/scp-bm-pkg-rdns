@@ -2,7 +2,6 @@
 
 namespace Packages\Rdns\App\Server;
 
-use GuzzleHttp\Client;
 use Illuminate\Foundation\Application;
 
 class ServerService
@@ -12,34 +11,53 @@ class ServerService
      */
     private $app;
 
-    /**
-     * @var Client
-     */
-    private $http;
+    private $map = [
+        'PowerDNS v3' => PowerDnsV3ServerControl::class,
+        'SynergyCP API' => SynergyServerControl::class,
+    ];
 
     /**
      * ServerService constructor.
      *
      * @param Application $app
-     * @param Client      $http
      */
-    public function __construct(Application $app, Client $http)
+    public function __construct(Application $app)
     {
         $this->app = $app;
-        $this->http = $http;
     }
 
     /**
-     * @return ServerControl
+     * @return SynergyServerControl
      */
     public function get()
     {
-        $settings = $this->app->Settings;
+        $settings = $this->app->make('Settings');
+        $class = array_get(
+            $this->map,
+            $settings->{'pkg.rdns.api.type'},
+            SynergyServerControl::class
+        );
 
-        return new ServerControl(
-            $this->http,
-            $settings->{'pkg.rdns.api.host'},
-            $settings->{'pkg.rdns.api.key'}
+        return $this->app->make($class, [
+            'host' => $settings->{'pkg.rdns.api.host'},
+            'key' => $settings->{'pkg.rdns.api.key'},
+            'nameServers' => $this->getNameServers($settings),
+        ]);
+    }
+
+    /**
+     * @param \stdClass $settings
+     *
+     * @return array<string>
+     */
+    private function getNameServers($settings)
+    {
+        $nameserversCSV = $settings->{'pkg.rdns.nameservers'};
+
+        return array_filter(
+            array_map(function ($domain) {
+                return trim($domain);
+            }, explode(',', $nameserversCSV))
         );
     }
 }

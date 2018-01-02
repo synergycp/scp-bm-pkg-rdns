@@ -19,6 +19,11 @@ class CreateSettings extends Migration
 
         $this->addSetting($group, Setting::TYPE_TEXT, 'pkg.rdns.api.host');
         $this->addSetting($group, Setting::TYPE_TEXT, 'pkg.rdns.api.key');
+        $this->addSetting($group, Setting::TYPE_SELECT, 'pkg.rdns.api.type', [
+            'value' => '0',
+            'options' => 'SynergyCP API,PowerDNS v3',
+        ]);
+        $this->addSetting($group, Setting::TYPE_TEXT, 'pkg.rdns.nameservers');
     }
 
     /**
