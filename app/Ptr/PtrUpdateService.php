@@ -86,6 +86,7 @@ class PtrUpdateService
 
         if ($existing = $this->ptrs->byIp($ip)) {
             $items->each(function (Ptr $item) use ($existing) {
+                // Switch from creating the PTR to updating it.
                 $item->id = $existing->id;
                 $item->exists = true;
             });

@@ -54,7 +54,6 @@ wget https://install.synergycp.com/bm/packages/dns-http-control-bind.tgz -O - | 
 ./bin/install.sh
 ```
 
-<<<<<<< HEAD
 ## Setting up the Package on SynergyCP
 1. Install the rDNS package on SynergyCP. As a sudo user (or run as root user and remove sudo):
 
@@ -77,3 +76,8 @@ wget https://install.synergycp.com/bm/packages/dns-http-control-bind.tgz -O - | 
 4. If applicable, import your rDNS zone files from your previous DNS server on the 
    Network > rDNS PTRs page of SynergyCP.
 5. Configure the DNS Server's IP as the nameserver for your IP address announcements.
+
+
+### Does it support IPv6
+
+Currently, only the PowerDNS integration supports IPv6.

@@ -2,6 +2,8 @@
 
 namespace Packages\Rdns\App\Server;
 
+use App\Ip\IpAddressContract;
+use App\Ip\IpService;
 use function array_shift;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
@@ -41,6 +43,11 @@ class PowerDnsV3ServerControl
     protected $zoneUtils;
 
     /**
+     * @var IpService
+     */
+    protected $ip;
+
+    /**
      * @var Application
      */
     protected $app;
@@ -65,6 +72,7 @@ class PowerDnsV3ServerControl
      *
      * @param Client      $http
      * @param ZoneUtils   $zoneUtils
+     * @param IpService   $ip
      * @param Application $app
      * @param string      $host
      * @param string      $key
@@ -73,6 +81,7 @@ class PowerDnsV3ServerControl
     public function __construct(
         Client $http,
         ZoneUtils $zoneUtils,
+        IpService $ip,
         Application $app,
         $host,
         $key,
@@ -80,6 +89,7 @@ class PowerDnsV3ServerControl
     ) {
         $this->http = $http;
         $this->zoneUtils = $zoneUtils;
+        $this->ip = $ip;
         $this->app = $app;
         $this->host = $host;
         $this->key = $key;
@@ -99,12 +109,9 @@ class PowerDnsV3ServerControl
 
     private function generatePtrUpdateRequest($ip, $action, $ptr = '')
     {
+        $ip = $this->ip->make($ip);
         $zone = $this->createZone($ip);
-        $name = sprintf(
-            '%s.%s',
-            last(explode('.', $ip)),
-            $this->zoneUtils->getNameFromIP($ip)
-        );
+        $name = $this->zoneUtils->getPtrNameFromIP($ip);
 
         return $this->request('PATCH', 'servers/localhost/zones/' . $zone, [
             'rrsets' => [[
@@ -123,13 +130,13 @@ class PowerDnsV3ServerControl
     }
 
     /**
-     * @param string $ip
+     * @param IpAddressContract $ip
      *
      * @return string
      */
-    private function createZone($ip)
+    private function createZone(IpAddressContract $ip)
     {
-        $name = $this->zoneUtils->getNameFromIP($ip);
+        $name = $this->zoneUtils->getZoneNameFromIP($ip);
 
         // Get every name server except for the master one.
         $nameServers = $this->nameServers;
