@@ -71,6 +71,10 @@ extends FilterService
             );
         }
 
+        if ($entity = $this->request->input('entity')) {
+            $query->where('entity_id', $entity);
+        }
+
         return $query;
     }
 }

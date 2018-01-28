@@ -1,0 +1,74 @@
+swagger: "2.0"
+info:
+  description: "SynergyCP rDNS Package API documentation"
+  version: "1.0.0"
+  title: "SynergyCP rDNS Package"
+host: "api.yoursynergycp.com"
+basePath: "/pkg/rdns/"
+schemes:
+- "http"
+- "https"
+paths:
+  /ptr:
+    post:
+      summary: "Create a new PTR Record, or overwrite an existing one"
+      description: ""
+      operationId: "addPtr"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        description: "The PTR Record that needs to be added to the DNS server"
+        schema:
+          $ref: "#/definitions/Ptr"
+      responses:
+        400:
+          description: "Invalid input"
+      security: 
+      - api_key: []
+    get:
+      summary: "List all PTR Records"
+      description: ""
+      produces:
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "entity"
+        description: "(Optional) The ID of the IP entity you wish to lookup records for"
+        type: "integer"
+        format: "int64"
+      - in: "query"
+        name: "q"
+        description: "(Optional) Text-based search of the PTR and IP records"
+        type: "string"
+      responses:
+        400:
+          description: "Invalid input"
+      security: 
+      - api_key: []
+securityDefinitions:
+  api_key:
+    type: "apiKey"
+    name: "key"
+    in: "query"
+definitions:
+  Ptr:
+    type: "object"
+    required:
+    - "name"
+    - "photoUrls"
+    properties:
+      id:
+        type: "integer"
+      ptr:
+        type: "string"
+        example: "some.hostname"
+        description: "The hostname that the PTR record should point to"
+      ip:
+        type: "string"
+        example: "1.1.1.1"
+        description: "The IP address that needs to point to the PTR record"
