@@ -7,7 +7,12 @@ use Packages\Rdns\App\Ptr;
 
 class PtrDeleted extends PtrLoggableEvent
 {
-    protected $allowSoftDeletes = true;
+    protected $allowNullModel = true;
+
+    /**
+     * @var Ptr\Ptr|null
+     */
+    public $target;
 
     /**
      * @var string

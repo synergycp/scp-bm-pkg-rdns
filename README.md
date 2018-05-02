@@ -1,8 +1,8 @@
 ## About
 
 The rDNS package adds a frontend to SynergyCP that allows Clients and Administrators to 
-set rDNS PTR records. Currently, [BIND](#bind-setup) 
-and [PowerDNS](#powerdns-v3-setup) are supported. 
+set rDNS PTR records. Currently, BIND 
+and PowerDNS are supported. 
 
 An rDNS PTR is a single DNS record pointing a unique IP address to a hostname. 
 When someone uses a server to send out emails, the receiving server usually does 
@@ -78,6 +78,6 @@ wget https://install.synergycp.com/bm/packages/dns-http-control-bind.tgz -O - | 
 5. Configure the DNS Server's IP as the nameserver for your IP address announcements.
 
 
-### Does it support IPv6
+### Does it support IPv6?
 
-Currently, only the PowerDNS integration supports IPv6.
+Yes! Although currently, the BIND integration does not support IPv6.

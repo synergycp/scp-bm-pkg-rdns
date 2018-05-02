@@ -27,7 +27,7 @@ class ServerService
     }
 
     /**
-     * @return SynergyServerControl
+     * @return IServerControl
      */
     public function get()
     {
