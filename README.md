@@ -22,8 +22,8 @@ If you want redundancy and scalability, you should use the PowerDNS setup.
 ### PowerDNS v3 setup
 
 First, install PowerDNS v3 on a server if you do not already have it installed. 
-This guide assumes usage of PowerDNS 3.4.1 which is currently the default when using `apt-get install pdns-server`. 
-PowerDNS cannot be installed on the same server as any Synergy server without a multi-IP configuration due to port conflicts.
+This guide assumes usage of PowerDNS v3.4.1 which is currently the default when using `apt-get install pdns-server` *on Debian 8*. On Debian 9, PowerDNS needs to be manually installed from the source, so we recommend Debian 8.
+PowerDNS cannot be installed on the same server as any Synergy server due to port conflicts.
 
 Open up `/etc/powerdns/pdns.conf` as root and add the following config variables:
 
