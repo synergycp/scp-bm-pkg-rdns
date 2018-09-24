@@ -40,6 +40,10 @@ experimental-api-key=<generate a very strong password>
 Allow port 8081 through the firewall if one is setup.
 Save the `experimental-api-key` password for later.
 
+Finally, restart the PowerDNS service so that your changes take effect (must be run as root):
+```
+service pdns restart
+```
 
 ### Bind setup
 
