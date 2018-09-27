@@ -81,8 +81,7 @@ wget https://install.synergycp.com/bm/packages/dns-http-control-bind.tgz -O - | 
     ```
 
 2. Go into the SynergyCP application and add the rDNS setting values shown at the end of the DNS Server install.
-   For PowerDNS, the API Host would be `<ip of PowerDNS Server>:8081` and the API Key would be the 
-   `experimental-api-key` you generated. 
+   For PowerDNS, the API Host would be `<ip of PowerDNS Server>:8081` and the API Key would be the one generated during setup. 
 3. Add an rDNS PTR from the dashboard of SynergyCP and make sure it works:
 
     ```
