@@ -21,11 +21,24 @@ If you want redundancy and scalability, you should use the PowerDNS setup.
 
 ### PowerDNS v3 setup
 
-First, install PowerDNS v3 on a server if you do not already have it installed. 
-This guide assumes usage of PowerDNS v3.4.1 which is currently the default when using `apt-get install pdns-server` *on Debian 8*. On Debian 9, PowerDNS needs to be manually installed from the source, so we recommend Debian 8.
-PowerDNS cannot be installed on the same server as any Synergy server due to port conflicts.
+**NOTE:** If you have PowerDNS already setup, you can skip to "Existing PowerDNS server" below.
 
-Open up `/etc/powerdns/pdns.conf` as root and add the following config variables:
+This command must be run as root on a fresh *Debian 8* (Debian 9 does not have the right PowerDNS installer, currently) server with nothing else installed. 
+It cannot be run on the server Synergy is running on due to port conflicts. 
+Save the details that are shown at the end of the installation.
+
+```
+mkdir -p /scp/dns
+cd /scp/dns 
+wget https://install.synergycp.com/bm/packages/dns-http-control-powerdns.tgz -O - | tar -zxvf -
+./bin/install.sh
+``` 
+
+#### Existing PowerDNS server
+
+**NOTE:** You can skip this section if you used the above install command as it does this for you.
+
+If you already have PowerDNS installed and want to add support to manage it from SynergyCP, first you must make sure that the PowerDNS version running is PowerDNS v3.4 with MySQL backend. Open up `/etc/powerdns/pdns.conf` as root and add the following config variables:
 
 ```
 # Required for SynergyCP Integration:
@@ -46,6 +59,8 @@ service pdns restart
 ```
 
 ### Bind setup
+
+**NOTE:** You can skip this section if you have setup PowerDNS through one of the above methods
 
 This must be run as root on a fresh Debian 8 server with nothing else installed. 
 It cannot be run on the server Synergy is running on due to port conflicts. 

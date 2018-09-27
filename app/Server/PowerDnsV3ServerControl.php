@@ -154,6 +154,7 @@ class PowerDnsV3ServerControl
         } catch (ClientException $exc) {
             if ($exc->getCode() === 422) {
                 // Duplicate error, so just ignore it.
+                // TODO: Not always duplicate error!
                 return $name;
             }
 
