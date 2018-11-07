@@ -2,6 +2,7 @@
 
 namespace Packages\Rdns\App\Ptr;
 
+use App\Entity\Events\EntityDeleted;
 use App\Log\EventLogger;
 use App\Support\EventServiceProvider;
 use Packages\Rdns\App\Ptr\Listeners;
@@ -29,6 +30,9 @@ extends EventServiceProvider
         ],
         EntityOwnerDeleted::class => [
             ClearRdns::class,
+        ],
+        EntityDeleted::class => [
+            Listeners\ClearRdnsOnDelete::class,
         ],
     ];
 }
