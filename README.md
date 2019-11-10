@@ -58,6 +58,8 @@ Finally, restart the PowerDNS service so that your changes take effect (must be 
 service pdns restart
 ```
 
+Then, add the PowerDNS server to SynergyCP using the details added to the config file. Note that you must use the following syntax for the hostname: `your.hostname:8081` for SynergyCP to know the port that PowerDNS is configured to use.
+
 ### Bind setup
 
 **NOTE:** You can skip this section if you have setup PowerDNS through one of the above methods
