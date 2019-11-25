@@ -4,7 +4,7 @@ var _ = require('lodash');
 gulp.require('settings').dir = __dirname;
 
 var PATH = {
-  PUBLIC: 'public/',
+  PUBLIC: '../public/admin/',
   MARKUP: 'app/',
   SCRIPTS: 'app/',
   ASSETS: 'resources/assets/',
