@@ -2,6 +2,6 @@
 
 DIR=$(pwd)
 
-cd "$DIR/admin" && npm i && gulp prod build || exit 1
-cd "$DIR/client" && npm i && gulp prod build || exit 1
-cd "$DIR" && composer install || exit 1
+cd "$DIR/admin" && npm i && gulp prod build
+cd "$DIR/client" && npm i && gulp prod build
+cd "$DIR" && composer install

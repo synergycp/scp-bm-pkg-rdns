@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData">
+    <serverData>
+      <paths name="Client">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/../../app" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../../vendor" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="Synergy CP">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/../../app" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../../vendor" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="SynergyCP Admin">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/../../app" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../../vendor" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
