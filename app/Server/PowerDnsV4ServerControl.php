@@ -201,7 +201,6 @@ class PowerDnsV4ServerControl implements IServerControl {
    * @throws GuzzleException
    */
   private function request($method, $uri, array $data = null) {
-    print_r($data);
     return $this->http->request(
       $method,
       sprintf('http://%s/%s', $this->host, $uri),
