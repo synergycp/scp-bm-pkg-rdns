@@ -119,7 +119,7 @@ class PowerDnsV4ServerControl implements IServerControl {
           'changetype' => $action,
           'records' => [$this->generatePtrRecord($name, $ptr)],
           'comments' => [
-            // ['account' => 'SynergyCP', 'content' => 'Created by SynergyCP'],
+            ['account' => 'SynergyCP', 'content' => 'Created by SynergyCP'],
           ],
         ],
       ],
