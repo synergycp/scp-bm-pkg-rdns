@@ -60,6 +60,10 @@ class ZoneUtils
         return $this->compileAddress($parts, $ip);
     }
 
+    public function getCanonicalName(string $name): string {
+      return $name . '.';
+    }
+
     private function getParts(IpAddressContract $ip)
     {
         if (is_a($ip, IpAddressV6::class)) {
