@@ -13,7 +13,7 @@ class AddPowerDNSv4Setting extends Migration
     public function up()
     {
         $setting = Setting::query()->where('name', 'pkg.rdns.api.type')->first();
-        $setting->options = 'SynergyCP API,PowerDNS v4,PowerDNS v3';
+        $setting->options = 'SynergyCP API,PowerDNS v3,PowerDNS v4';
         $setting->save();
     }
 
