@@ -173,8 +173,23 @@ class PowerDnsV4ServerControl implements IServerControl {
         ->getBody()
         ->getContents();
       
-      // Ignore duplicate zone errors.
+      // Ignore duplicate zone errors (4.3).
       if ($exc->getCode() === 409 && $body === "Conflict") {
+        return;
+      }
+
+      try {
+        $json = json_decode($body);
+      } catch (\Exception $_) {
+        // If we can't parse the response body as JSON to get the error, throw the original exception.
+        throw $exc;
+      }
+
+      // Ignore duplicate zone errors. (<4.3?)
+      if (
+        $exc->getCode() === 422 &&
+        $json->error === "Domain '$name' already exists"
+      ) {
         return;
       }
       

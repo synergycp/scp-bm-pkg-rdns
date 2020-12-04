@@ -2,7 +2,7 @@
   "data": {
     "slug": "rdns",
     "name": "rDNS",
-    "semver": "1.1.0",
+    "semver": "1.1.1",
     "description": "Allows clients and administrators to create rDNS PTRs from within SynergyCP.",
     "download_url": "https://api.packages.synergycp.com/package/synergycp/rdns/download.tar.gz",
     "release_date_unix": 1606600874,
