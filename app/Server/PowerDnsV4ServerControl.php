@@ -158,9 +158,10 @@ class PowerDnsV4ServerControl implements IServerControl {
   }
 
   private function attemptCreateZone(string $name, array $nameServers): void {
+    $canonicalName = $this->zoneUtils->getCanonicalName($name);
     try {
       $this->request('POST', $this->buildZoneBaseURL(), [
-        'name' => $this->zoneUtils->getCanonicalName($name),
+        'name' => $canonicalName,
         'kind' => 'Native',
         'nameservers' => array_map(function ($nameserver) {
           return $this->zoneUtils->getCanonicalName($nameserver);
@@ -188,7 +189,7 @@ class PowerDnsV4ServerControl implements IServerControl {
       // Ignore duplicate zone errors. (<4.3?)
       if (
         $exc->getCode() === 422 &&
-        $json->error === "Domain '$name' already exists"
+        $json->error === "Domain '$canonicalName' already exists"
       ) {
         return;
       }
