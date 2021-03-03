@@ -72,7 +72,7 @@ extends FilterService
         }
 
         if ($entity = $this->request->input('entity')) {
-            $query->where('entity_id', $entity);
+          $query->whereIn('entity_id', array_flatten([$entity]));
         }
 
         return $query;
