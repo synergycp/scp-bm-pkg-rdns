@@ -2,38 +2,37 @@
 
 namespace Packages\Rdns\App\Ptr\Listeners;
 
-use App\Entity\Owner\Events\EntityOwnerDeleted;
 use Packages\Rdns\App\Ptr\Events\PtrDeleted;
 use Packages\Rdns\App\Ptr\Ptr;
 use Packages\Rdns\App\Ptr\PtrRepository;
 use App\Entity\Entity;
+use App\Ip\Owner\Events\IPOwnerDeleted;
+use App\Ip\Owner\IIPHasOwner;
 
 class ClearRdns
 {
-    /**
-     * @var PtrRepository
-     */
-    private $ptrs;
+  /**
+   * @var PtrRepository
+   */
+  private $ptrs;
 
-    public function __construct(PtrRepository $ptrs)
-    {
-        $this->ptrs = $ptrs;
+  public function __construct(PtrRepository $ptrs) {
+    $this->ptrs = $ptrs;
+  }
+
+  public function handle(IPOwnerDeleted $event) {
+    $this->clear($event->target);
+  }
+
+  protected function clear(IIPHasOwner $ip) {
+    if (get_class($ip->ipHasOwnerModelForLogging()) != Entity::class) {
+      return;
     }
-
-    public function handle(EntityOwnerDeleted $event)
-    {
-        $this->clear($event->target);
-    }
-
-    protected function clear(Entity $entity)
-    {
-        $this->ptrs
-            ->where('entity_id', $entity->getKey())
-            ->each(function (Ptr $ptr) {
-                event(new PtrDeleted($ptr));
-                $ptr->forceDelete();
-            })
-            ;
-    }
-
+    $this->ptrs
+      ->where('entity_id', $ip->ipHasOwnerModelForLogging()->getKey())
+      ->each(function (Ptr $ptr) {
+        event(new PtrDeleted($ptr));
+        $ptr->forceDelete();
+      });
+  }
 }
