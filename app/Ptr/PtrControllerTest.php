@@ -9,6 +9,28 @@ use App\Server\Port\ServerPortWithEntitiesTestNetwork;
 use Illuminate\Http\JsonResponse;
 use Packages\Rdns\App\RdnsTestCase;
 
+function dns_get_record($ptr, $type = null) {
+    $ips = array(
+        array('host' => 'test_int_ptr_name','ip'=> '1.1.1.1', 'type' => 'A'),
+        array('host' => 'test_create','ip'=> '1.1.1.1', 'type' => 'A'),
+        array('host' => 'test_int_ptr_name','ip'=> '1.1.1.2', 'type' => 'A'),
+        array('host' => 'test_create','ip'=> '1.1.1.2', 'type' => 'A'),
+        array('host' => 'test_int_ptr_name','ip'=> '1.1.1.3', 'type' => 'A'),
+        array('host' => 'test_create','ip'=> '1.1.1.3', 'type' => 'A'),
+        array('host' => 'test_int_ptr_name','ip'=> '5.5.5.5', 'type' => 'A'),
+        array('host' => 'test_create','ip'=> '5.5.5.5', 'type' => 'A'),
+        array('host' => 'test_ext_ptr_name','ip'=> '8.8.8.8', 'type' => 'A'),
+        array('host' => 'test_create','ip'=> '8.8.8.8', 'type' => 'A'),
+    );
+    $array = array();
+    foreach($ips as $ip){      
+      if($ip['host'] == $ptr){
+        array_push($array, $ip);
+      }
+    }
+    return $array;
+}
+
 class PtrControllerTest extends RdnsTestCase {
   const PERMISSIONS = [
     'read' => 'network.entities.read',
@@ -70,8 +92,8 @@ class PtrControllerTest extends RdnsTestCase {
   }
 
   public function tearDown() {
-    $this->externalEntity->delete();
     $this->deletePtrs();
+    $this->externalEntity->delete();
     parent::tearDown();
   }
 
@@ -153,6 +175,14 @@ class PtrControllerTest extends RdnsTestCase {
       $this->get($this->url());
       $this->assertResponseOk();
       $this->assertResponseResultCount(3);
+    });
+  }
+
+  public function testInvalidPtrIpOnCreate(){
+    $this->asAdminWithPermissions(static::PERMISSIONS, function () {
+      $ip = "9.9.9.9";
+      $this->tryCreate(['ip' => $ip]);
+      $this->assertResponseStatus(409);
     });
   }
 

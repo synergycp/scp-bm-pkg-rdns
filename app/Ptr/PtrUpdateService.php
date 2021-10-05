@@ -22,15 +22,22 @@ class PtrUpdateService extends UpdateService {
    */
   private $ptrs;
 
+    /**
+   * @var PtrValidateRdns
+   */
+  private $rdns;
+
   /**
    * PtrUpdateService constructor.
    *
    * @param PtrService    $ptr
    * @param PtrRepository $ptrs
+   * @param PtrValidateRdns $rdns
    */
-  public function boot(PtrService $ptr, PtrRepository $ptrs) {
+  public function boot(PtrService $ptr, PtrRepository $ptrs, PtrValidateRdns $rdns) {
     $this->ptr = $ptr;
     $this->ptrs = $ptrs;
+    $this->rdns = $rdns;
   }
 
   public function afterCreate(Collection $items) {
@@ -60,6 +67,9 @@ class PtrUpdateService extends UpdateService {
   }
 
   protected function beforeCreate(Collection $items) {
+    if(!$this->rdns->validate($this->input('ip'), $this->input('ptr'))){
+      abort(409, "Invalid IP");
+    }
     $this->setIp($items);
   }
 
