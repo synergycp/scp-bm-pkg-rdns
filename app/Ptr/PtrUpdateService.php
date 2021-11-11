@@ -51,6 +51,11 @@ class PtrUpdateService extends UpdateService {
   }
 
   private function setPtr(Collection $items) {
+    foreach($items as $ptr){
+      if(!$this->rdns->validate($ptr->ip, $this->input('ptr'))){
+        abort(409, "Invalid IP");
+      }
+    }
     $inputs = [
       'ptr' => $this->input('ptr') ?: null,
     ];
@@ -67,9 +72,6 @@ class PtrUpdateService extends UpdateService {
   }
 
   protected function beforeCreate(Collection $items) {
-    if(!$this->rdns->validate($this->input('ip'), $this->input('ptr'))){
-      abort(409, "Invalid IP");
-    }
     $this->setIp($items);
   }
 

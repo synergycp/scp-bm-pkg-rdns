@@ -9,28 +9,6 @@ use App\Server\Port\ServerPortWithEntitiesTestNetwork;
 use Illuminate\Http\JsonResponse;
 use Packages\Rdns\App\RdnsTestCase;
 
-function dns_get_record($ptr, $type = null) {
-    $ips = array(
-        array('host' => 'test_int_ptr_name','ip'=> '1.1.1.1', 'type' => 'A'),
-        array('host' => 'test_create','ip'=> '1.1.1.1', 'type' => 'A'),
-        array('host' => 'test_int_ptr_name','ip'=> '1.1.1.2', 'type' => 'A'),
-        array('host' => 'test_create','ip'=> '1.1.1.2', 'type' => 'A'),
-        array('host' => 'test_int_ptr_name','ip'=> '1.1.1.3', 'type' => 'A'),
-        array('host' => 'test_create','ip'=> '1.1.1.3', 'type' => 'A'),
-        array('host' => 'test_int_ptr_name','ip'=> '5.5.5.5', 'type' => 'A'),
-        array('host' => 'test_create','ip'=> '5.5.5.5', 'type' => 'A'),
-        array('host' => 'test_ext_ptr_name','ip'=> '8.8.8.8', 'type' => 'A'),
-        array('host' => 'test_create','ip'=> '8.8.8.8', 'type' => 'A'),
-    );
-    $array = array();
-    foreach($ips as $ip){      
-      if($ip['host'] == $ptr){
-        array_push($array, $ip);
-      }
-    }
-    return $array;
-}
-
 class PtrControllerTest extends RdnsTestCase {
   const PERMISSIONS = [
     'read' => 'network.entities.read',
@@ -89,6 +67,8 @@ class PtrControllerTest extends RdnsTestCase {
     $this->externalPtr->ip = '8.8.8.8';
     $this->externalPtr->entity_id = $this->externalEntity->getKey();
     $this->externalPtr->save();
+
+    $this->dns = $this->mockService(DnsRecordService::class);
   }
 
   public function tearDown() {
@@ -180,7 +160,14 @@ class PtrControllerTest extends RdnsTestCase {
 
   public function testInvalidPtrIpOnCreate(){
     $this->asAdminWithPermissions(static::PERMISSIONS, function () {
-      $ip = "9.9.9.9";
+      $this->dns
+      ->shouldReceive('get')
+      ->with('test_create')
+      ->once()
+      ->andReturn(
+        array(
+          array('host' => 'test_create','ip'=> '1.1.1.3', 'type' => 'A')
+        ));      $ip = "9.9.9.9";
       $this->tryCreate(['ip' => $ip]);
       $this->assertResponseStatus(409);
     });
@@ -199,7 +186,16 @@ class PtrControllerTest extends RdnsTestCase {
   }
 
   protected function canCreateInsideEntityRange(): JsonResponse {
+    $this->dns
+      ->shouldReceive('get')      
+      ->with("test_create")
+      ->once()
+      ->andReturn(
+        array(
+          array('host' => 'can_create_inside','ip'=> '1.1.1.3', 'type' => 'A'),
+        ));
     $this->expectsEvents(Events\PtrCreated::class);
+
     $ip = $this->endEntityRange();
     $result = $this->tryCreate(['ip' => $ip]);
 
@@ -209,7 +205,16 @@ class PtrControllerTest extends RdnsTestCase {
   }
 
   protected function canCreateOutsideEntityRange(): JsonResponse {
+    $this->dns
+      ->shouldReceive('get')
+      ->with('test_create')
+      ->once()
+      ->andReturn(
+        array(
+          array('host' => 'can_create_outside ','ip'=> '5.5.5.5', 'type' => 'A')
+        ));
     $this->expectsEvents(Events\PtrCreated::class);
+
     $result = $this->tryCreate(['ip' => ($ip = '5.5.5.5')]);
 
     $this->assertResponseOk();
@@ -287,18 +292,39 @@ class PtrControllerTest extends RdnsTestCase {
   }
 
   protected function cannotCreateInsideEntityRange(): JsonResponse {
+    $this->dns
+      ->shouldReceive('get')
+      ->with('test_create')
+      ->andReturn(
+        array(
+          array('host' => 'test_create','ip'=> '1.1.1.3', 'type' => 'A')
+        ));
     $resp = $this->tryCreate(['ip' => $this->endEntityRange()]);
     $this->assertResponseStatusOneOf([404, 403]);
     return $resp;
   }
 
   protected function cannotCreateOutsideEntityRange(): JsonResponse {
+    $this->dns
+      ->shouldReceive('get')
+      ->with('test_create')
+      ->andReturn(
+        array(
+          array('host' => 'test_create','ip'=> '5.5.5.5', 'type' => 'A')
+        ));
     $resp = $this->tryCreate(['ip' => '5.5.5.5']);
     $this->assertResponseStatusOneOf([404, 403]);
     return $resp;
   }
 
   protected function cannotUpdateInsideEntityRange(): JsonResponse {
+    $this->dns
+    ->shouldReceive('get')
+    ->with('test_edit')
+    ->andReturn(
+      array(
+        array('host' => 'test_edit','ip'=> '1.1.1.1', 'type' => 'A')
+      ));
     $resp = $this->patch($this->url($this->ptr), [
       'ptr' => 'test_edit',
     ]);
@@ -307,6 +333,13 @@ class PtrControllerTest extends RdnsTestCase {
   }
 
   protected function cannotUpdateOutsideEntityRange(): JsonResponse {
+    $this->dns
+      ->shouldReceive('get')
+      ->with('test_edit')
+      ->andReturn(
+        array(
+          array('host' => 'test_edit','ip'=> '8.8.8.8', 'type' => 'A')
+        ));
     $resp = $this->patch($this->url($this->externalPtr), [
       'ptr' => 'test_edit',
     ]);
@@ -316,6 +349,15 @@ class PtrControllerTest extends RdnsTestCase {
 
   protected function canUpdateInsideEntityRange(): JsonResponse {
     $this->expectsEvents(Events\PtrPtrUpdated::class);
+    $this->dns
+      ->shouldReceive('get')
+      ->with('test_edit')
+      ->once()
+      ->andReturn(
+        array(
+          array('host' => 'test_edit','ip'=> '1.1.1.1', 'type' => 'A')
+        ));
+        
     $resp = $this->patch($this->url($this->ptr), [
       'ptr' => 'test_edit',
     ]);
@@ -327,7 +369,14 @@ class PtrControllerTest extends RdnsTestCase {
 
   protected function canUpdateOutsideEntityRange(): JsonResponse {
     $this->expectsEvents(Events\PtrPtrUpdated::class);
-
+    $this->dns
+      ->shouldReceive('get')
+      ->with('test_edit')
+      ->once()
+      ->andReturn(
+        array(
+          array('host' => 'test_edit','ip'=> '8.8.8.8', 'type' => 'A')
+        ));
     $resp = $this->patch($this->url($this->externalPtr), [
       'ptr' => 'test_edit',
     ]);
