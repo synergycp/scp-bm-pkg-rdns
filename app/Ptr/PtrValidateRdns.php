@@ -20,22 +20,15 @@ class PtrValidateRdns {
     /**
      * @return bool
      */
-    public function validate($input, $domain) {
-        $answers = $this->dns->get($domain);
-        foreach($answers as $x) {
-            if($x['type'] == "A") {
-                $ip = $x['ip'];
-                if($ip == $input){
-                    return true;
-                }
-            }
-            else if($x['type'] == "AAAA") {
-                $ip = $x['ipv6'];
-                if($ip == $input){
-                    return true;
-                }
+    public function validate($ip, $domain) {
+        $answers = $this->dns->getARecords($domain);
+        foreach($answers as $record) {
+            switch($record['type']) {
+               case "A":
+                   return $record['ip'] === $ip;
+               case "AAAA":
+                  return $record['ipv6'] === $ip;
             }
         }
-        return false;
     }
 }

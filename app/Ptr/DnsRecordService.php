@@ -9,7 +9,7 @@ class DnsRecordService {
    * 
    * @return array 
    */
-  public function get($domain){
+  public function getARecords ($domain) {
     return dns_get_record($domain, DNS_A + DNS_AAAA);    
   }
 }
