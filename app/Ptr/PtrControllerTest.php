@@ -158,12 +158,13 @@ class PtrControllerTest extends RdnsTestCase {
     });
   }
 
-  public function testInvalidPtrIpOnCreate(){
+  public function testPtrNotAssociatedWithIpOnCreate(){
     $this->asAdminWithPermissions(static::PERMISSIONS, function () {
       $this->mockDns('test_create', '1.1.1.3', 1);
       $ip = "9.9.9.9";
       $this->tryCreate(['ip' => $ip]);
       $this->assertResponseStatus(409);
+      $this->assertMessageContains('Invalid IP, IP is not associated with Ptr');
     });
   }
 

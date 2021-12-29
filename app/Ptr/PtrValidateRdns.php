@@ -18,9 +18,12 @@ class PtrValidateRdns {
     $this->dns = $dns;
   }
     /**
+     * @param string $ip
+     * @param string $domain
+     * 
      * @return bool
      */
-    public function validate($ip, $domain) {
+    public function validate( $ip, $domain): bool {
         $answers = $this->dns->getARecords($domain);
         foreach($answers as $record) {
             switch($record['type']) {
