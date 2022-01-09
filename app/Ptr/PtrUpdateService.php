@@ -22,15 +22,22 @@ class PtrUpdateService extends UpdateService {
    */
   private $ptrs;
 
+    /**
+   * @var PtrValidateRdns
+   */
+  private $ptrValidator;
+
   /**
    * PtrUpdateService constructor.
    *
    * @param PtrService    $ptr
    * @param PtrRepository $ptrs
+   * @param PtrValidateRdns $ptrValidator
    */
-  public function boot(PtrService $ptr, PtrRepository $ptrs) {
+  public function boot(PtrService $ptr, PtrRepository $ptrs, PtrValidateRdns $ptrValidator) {
     $this->ptr = $ptr;
     $this->ptrs = $ptrs;
+    $this->ptrValidator = $ptrValidator;
   }
 
   public function afterCreate(Collection $items) {
@@ -44,6 +51,11 @@ class PtrUpdateService extends UpdateService {
   }
 
   private function setPtr(Collection $items) {
+    foreach($items as $ptr){
+      if(!$this->ptrValidator->validate($ptr->ip, $this->input('ptr'))){
+        abort(409, "Invalid PTR, Please ensure that ".$this->input('ptr')." has an A or AAAA DNS record to ".$ptr->ip);
+      }
+    }
     $inputs = [
       'ptr' => $this->input('ptr') ?: null,
     ];
