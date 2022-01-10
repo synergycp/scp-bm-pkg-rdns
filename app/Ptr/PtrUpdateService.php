@@ -53,7 +53,7 @@ class PtrUpdateService extends UpdateService {
   private function setPtr(Collection $items) {
     foreach($items as $ptr){
       if(!$this->ptrValidator->validate($ptr->ip, $this->input('ptr'))){
-        abort(409, "Invalid IP, IP is not associated with Ptr.");
+        abort(409, "Invalid PTR, Please ensure that ".$this->input('ptr')." has an A or AAAA DNS record to ".$ptr->ip);
       }
     }
     $inputs = [
