@@ -33,6 +33,7 @@
     Api.all("entity")
       .getList({
         server: ServerManage.getServer().id,
+        include_pool_ips: true,
       })
       .then(setEntities)
       .then(ipRange)
