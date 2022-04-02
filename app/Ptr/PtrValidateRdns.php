@@ -29,9 +29,9 @@ class PtrValidateRdns {
       foreach($answers as $record) {
           switch($record['type']) {
               case "A":
-                  return $record['ip'] === $ip;
+                  if ($record['ip'] === $ip) return true;
               case "AAAA":
-                return $record['ipv6'] === $ip;
+                if ($record['ipv6'] === $ip) return true;
           }
       }
       return false;
