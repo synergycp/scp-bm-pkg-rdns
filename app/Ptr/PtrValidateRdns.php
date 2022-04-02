@@ -17,21 +17,23 @@ class PtrValidateRdns {
   public function __construct(DnsRecordService $dns){
     $this->dns = $dns;
   }
-    /**
-     * @param string $ip
-     * @param string $domain
-     * 
-     * @return bool
-     */
-    public function validate( $ip, $domain): bool {
-        $answers = $this->dns->getARecords($domain);
-        foreach($answers as $record) {
-            switch($record['type']) {
-               case "A":
-                   return $record['ip'] === $ip;
-               case "AAAA":
-                  return $record['ipv6'] === $ip;
-            }
-        }
-    }
+
+  /**
+   * @param string $ip
+   * @param string $domain
+   * 
+   * @return bool
+   */
+  public function validate($ip, $domain): bool {
+      $answers = $this->dns->getARecords($domain);
+      foreach($answers as $record) {
+          switch($record['type']) {
+              case "A":
+                  if ($record['ip'] === $ip) return true;
+              case "AAAA":
+                if ($record['ipv6'] === $ip) return true;
+          }
+      }
+      return false;
+  }
 }
