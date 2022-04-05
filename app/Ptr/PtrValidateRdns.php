@@ -30,6 +30,7 @@ class PtrValidateRdns {
           switch($record['type']) {
               case "A":
                   if ($record['ip'] === $ip) return true;
+                  break;
               case "AAAA":
                 if ($record['ipv6'] === $ip) return true;
           }
