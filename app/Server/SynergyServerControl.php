@@ -60,7 +60,7 @@ class SynergyServerControl implements IServerControl
     private function request($method, $uri, array $data = null)
     {
         $this->http->request($method, sprintf(
-            'http://%s/%s?key=%s',
+            'http:/%s/%s?key=%s',
             $this->host,
             $uri,
             urlencode($this->key)
