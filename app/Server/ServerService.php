@@ -39,7 +39,7 @@ class ServerService
             SynergyServerControl::class
         );
 
-        return $this->app->make($class, [
+        return $this->app->makeWith($class, [
             'host' => $settings->{'pkg.rdns.api.host'},
             'key' => $settings->{'pkg.rdns.api.key'},
             'nameServers' => $this->getNameServers($settings),
