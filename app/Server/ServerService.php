@@ -38,12 +38,18 @@ class ServerService
             $settings->{'pkg.rdns.api.type'},
             SynergyServerControl::class
         );
-
-        return $this->app->makeWith($class, [
+        $parameters = [
             'host' => $settings->{'pkg.rdns.api.host'},
             'key' => $settings->{'pkg.rdns.api.key'},
             'nameServers' => $this->getNameServers($settings),
-        ]);
+        ];
+        $version = $this->app->version();
+        
+        if($version >= '5.4.36') {
+            return $this->app->makeWith($class, $parameters);
+        } else {
+            return $this->app->make($class, $parameters);
+        }
     }
 
     /**
