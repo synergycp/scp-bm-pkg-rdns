@@ -1,5 +1,5 @@
 {
-    "name": "synergycp/scp-package-backup",
+    "name": "synergycp/scp-package-rdns",
     "description": "Synergy Control Panel - RDNS Package",
     "keywords": ["Synergy", "Server", "Control", "Panel", "Dedicated", "RDNS"],
     "license": "none",
