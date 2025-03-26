@@ -238,7 +238,6 @@ class PowerDnsV4ServerControl implements IServerControl {
         ' ',
         array_merge(array_slice($this->nameServers, 0, 2), self::SOA_CONFIG)
       ),
-      'priority' => 1,
       'disabled' => false,
     ];
   }
@@ -249,7 +248,6 @@ class PowerDnsV4ServerControl implements IServerControl {
       'name' => $name,
       'ttl' => self::TTL,
       'type' => self::PTR_TYPE,
-      'priority' => 1,
       'disabled' => false,
     ];
   }
