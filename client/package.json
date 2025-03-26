@@ -1,6 +1,6 @@
 {
   "name": "scp-package-rdns-client",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "Synergy Control Panel RDNS Package Client Front End",
   "author": "synergycontrolpanel",
   "devDependencies": {
