@@ -7,6 +7,11 @@
     "download_url": "https://api.packages.synergycp.com/package/synergycp/rdns/download.tar.gz",
     "release_date_unix": 1743006956,
     "changelog": [
+      "Fix bugs with DNS mapping when multiple records are present",
+      "Allow admins to bypass DNS mapping check",
+      "Display rDNS PTRs for IP Pools on server manage page",
+      "Require DNS mapping to exist when creating PTRs",
+      "Fix UI bug with previous rDNS release",
       "Removed the priority value from SOA and PTR records. This update ensures compatibility with PowerDNS >= 4.9"
     ]
   }
