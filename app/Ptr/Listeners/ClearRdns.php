@@ -20,7 +20,7 @@ class ClearRdns
     $this->ptrs = $ptrs;
   }
 
-  public function handle(IPOwnerDeleted $event) {
+  public function handle($event) {
     $this->clear($event->target);
   }
 
