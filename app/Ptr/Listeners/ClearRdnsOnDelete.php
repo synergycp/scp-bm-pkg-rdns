@@ -6,7 +6,7 @@ use App\Entity\Events\EntityDeleted;
 
 class ClearRdnsOnDelete extends ClearRdns
 {
-    public function handle(EntityDeleted $event)
+    public function handle($event)
     {
         $this->clear($event->target);
     }
