@@ -1,0 +1,114 @@
+name: Build and Deploy Package
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  R2_BUCKET: distribution
+  PACKAGE_PATH: packages/synergycp/rdns
+  D1_DATABASE: packages-api
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build admin frontend
+        working-directory: admin
+        run: |
+          npm install
+          npx gulp build
+
+      - name: Build client frontend
+        working-directory: client
+        run: |
+          npm install
+          npx gulp build
+
+      - name: Generate index.json
+        run: |
+          jq '.data | .release_date_unix = (now | floor)' scp-package.json > index.json
+          cat index.json
+
+      - name: Create package tarball
+        run: |
+          SLUG=$(jq -r '.data.slug' scp-package.json)
+          tar -czvf /tmp/download.tar.gz \
+            --transform "s,^\.,$SLUG," \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='vendor' \
+            --exclude='.idea' \
+            --exclude='CLAUDE.md' \
+            --exclude='index.json' \
+            --exclude='admin/node_modules' \
+            --exclude='client/node_modules' \
+            .
+          mv /tmp/download.tar.gz download.tar.gz
+
+      - name: Write to D1 database
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          SLUG=$(jq -r '.slug' index.json)
+          NAME=$(jq -r '.name' index.json)
+          SEMVER=$(jq -r '.semver' index.json)
+          DESCRIPTION=$(jq -r '.description' index.json)
+          DOWNLOAD_URL=$(jq -r '.download_url' index.json)
+          RELEASE_DATE_UNIX=$(jq -r '.release_date_unix' index.json)
+          CHANGELOG=$(jq -c '.changelog' index.json)
+
+          npx wrangler d1 execute ${{ env.D1_DATABASE }} --remote --command "
+            INSERT OR REPLACE INTO packages (slug, name, semver, description, download_url, release_date_unix, changelog)
+            VALUES ('$SLUG', '$NAME', '$SEMVER', '$DESCRIPTION', '$DOWNLOAD_URL', $RELEASE_DATE_UNIX, '$CHANGELOG')
+          "
+
+      - name: Upload to R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL: https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
+        run: |
+          aws s3 cp download.tar.gz s3://${{ env.R2_BUCKET }}/${{ env.PACKAGE_PATH }}/download.tar.gz --content-type application/gzip
+
+      - name: Purge Cloudflare cache
+        run: |
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"files":["https://distribution.synergycp.com/${{ env.PACKAGE_PATH }}/download.tar.gz"]}'
+
+      - name: Notify Slack on success
+        if: success()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -X POST -H 'Content-type: application/json' \
+              --data '{"text":"✅ *scp-bm-pkg-rdns* deployed successfully\nCommit: `${{ github.sha }}`\nBranch: `${{ github.ref_name }}`\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}' \
+              "$SLACK_WEBHOOK_URL"
+          fi
+
+      - name: Notify Slack on failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -X POST -H 'Content-type: application/json' \
+              --data '{"text":"❌ *scp-bm-pkg-rdns* deployment failed\nCommit: `${{ github.sha }}`\nBranch: `${{ github.ref_name }}`\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}' \
+              "$SLACK_WEBHOOK_URL"
+          fi
