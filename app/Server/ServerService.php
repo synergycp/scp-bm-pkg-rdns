@@ -15,6 +15,7 @@ class ServerService
         'PowerDNS v4' => PowerDnsV4ServerControl::class,
         'PowerDNS v3' => PowerDnsV3ServerControl::class,
         'SynergyCP API' => SynergyServerControl::class,
+        'Cloudflare' => CloudflareServerControl::class,
     ];
 
     /**

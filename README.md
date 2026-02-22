@@ -1,6 +1,6 @@
 ## About
 
-The rDNS package adds a frontend to SynergyCP that allows Clients and Administrators to set rDNS PTR records. Currently, BIND and PowerDNS v3/v4 are supported.
+The rDNS package adds a frontend to SynergyCP that allows Clients and Administrators to set rDNS PTR records. Currently, BIND, PowerDNS v3/v4, and Cloudflare are supported.
 
 An rDNS PTR is a single DNS record pointing a unique IP address to a hostname.
 When someone uses a server to send out emails, the receiving server usually does
