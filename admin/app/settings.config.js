@@ -39,6 +39,13 @@
 
           if (item.slug === 'pkg.rdns.api.type') {
             applyVisibility(item.value);
+
+            // Re-mark form control as dirty after applyVisibility replaces
+            // tab.items, since the ng-repeat re-render can reset $dirty state.
+            var formElem = tab.form && tab.form[item.id + '.value'];
+            if (formElem) {
+              formElem.$setDirty();
+            }
           }
         };
 
