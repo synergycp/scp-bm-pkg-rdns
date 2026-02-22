@@ -153,8 +153,10 @@ class CloudflareServerControl implements IServerControl {
     $zoneId = $body['result']['id'];
     $nameServers = $body['result']['name_servers'];
 
+    $nsList = implode(', ', $nameServers);
+
     $this->logFactory
-      ->create("Cloudflare: created zone '{$zoneName}'")
+      ->create("Cloudflare: created zone '{$zoneName}'. Assign these nameservers: {$nsList}")
       ->setData(['nameservers' => $nameServers])
       ->save();
 
