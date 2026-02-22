@@ -28,7 +28,7 @@ class PtrDeleted extends PtrLoggableEvent
 
     public function log(Log $log)
     {
-        $log->setDesc('Ptr deleted')
+        $log->setDesc("Ptr deleted: {$this->targetIp} -> {$this->target->ptr}")
             ->setTarget($this->target)
             ->save()
             ;

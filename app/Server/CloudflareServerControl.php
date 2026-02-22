@@ -3,7 +3,6 @@
 namespace Packages\Rdns\App\Server;
 
 use App\Ip\IpService;
-use App\Log\Factory as LogFactory;
 use GuzzleHttp\Client;
 use Packages\Rdns\App\Util\ZoneUtils;
 
@@ -30,11 +29,6 @@ class CloudflareServerControl implements IServerControl {
   private $ip;
 
   /**
-   * @var LogFactory
-   */
-  private $logFactory;
-
-  /**
    * @var string
    */
   private $key;
@@ -45,10 +39,14 @@ class CloudflareServerControl implements IServerControl {
   private $zoneIdCache = [];
 
   /**
+   * @var string|null
+   */
+  private $createdZoneInfo = null;
+
+  /**
    * @param Client     $http
    * @param ZoneUtils  $zoneUtils
    * @param IpService  $ip
-   * @param LogFactory $logFactory
    * @param string     $host
    * @param string     $key
    * @param array      $nameServers
@@ -57,7 +55,6 @@ class CloudflareServerControl implements IServerControl {
     Client $http,
     ZoneUtils $zoneUtils,
     IpService $ip,
-    LogFactory $logFactory,
     $host,
     $key,
     array $nameServers
@@ -65,7 +62,6 @@ class CloudflareServerControl implements IServerControl {
     $this->http = $http;
     $this->zoneUtils = $zoneUtils;
     $this->ip = $ip;
-    $this->logFactory = $logFactory;
     $this->key = $key;
   }
 
@@ -74,6 +70,8 @@ class CloudflareServerControl implements IServerControl {
    * @param string $ptr
    */
   public function createPtr($ip, $ptr) {
+    $this->createdZoneInfo = null;
+
     $ip = $this->ip->make($ip);
     $zoneName = $this->zoneUtils->getZoneNameFromIP($ip);
     $zoneId = $this->getZoneId($zoneName);
@@ -90,10 +88,12 @@ class CloudflareServerControl implements IServerControl {
     ];
 
     if ($existingRecordId) {
-      return $this->request('PUT', "zones/{$zoneId}/dns_records/{$existingRecordId}", $data);
+      $this->request('PUT', "zones/{$zoneId}/dns_records/{$existingRecordId}", $data);
+    } else {
+      $this->request('POST', "zones/{$zoneId}/dns_records", $data);
     }
 
-    return $this->request('POST', "zones/{$zoneId}/dns_records", $data);
+    return $this->createdZoneInfo;
   }
 
   /**
@@ -154,11 +154,7 @@ class CloudflareServerControl implements IServerControl {
     $nameServers = $body['result']['name_servers'];
 
     $nsList = implode(', ', $nameServers);
-
-    $this->logFactory
-      ->create("Cloudflare: created zone '{$zoneName}'. Assign these nameservers: {$nsList}")
-      ->setData(['nameservers' => $nameServers])
-      ->save();
+    $this->createdZoneInfo = "Zone '{$zoneName}' created in Cloudflare. Assign these nameservers: {$nsList}";
 
     $this->zoneIdCache[$zoneName] = $zoneId;
 
