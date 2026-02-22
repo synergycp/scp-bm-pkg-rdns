@@ -27,5 +27,11 @@ extends ServiceProvider
         $classMap
             ->map('pkg.rdns.ptr', Ptr::class)
         ;
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Packages\Rdns\App\Console\SyncPtrsToProvider::class,
+            ]);
+        }
     }
 }
