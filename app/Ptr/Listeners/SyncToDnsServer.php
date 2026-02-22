@@ -49,6 +49,7 @@ implements ShouldQueue
             ->first();
 
         if ($log) {
+            $log->timestamps = false;
             $log->desc = "{$log->desc}. {$info}";
             $log->save();
         }
