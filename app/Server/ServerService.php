@@ -3,6 +3,7 @@
 namespace Packages\Rdns\App\Server;
 
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Arr;
 
 class ServerService
 {
@@ -34,7 +35,7 @@ class ServerService
     public function get()
     {
         $settings = $this->app->make('Settings');
-        $class = array_get(
+        $class = Arr::get(
             $this->map,
             $settings->{'pkg.rdns.api.type'},
             SynergyServerControl::class
@@ -44,13 +45,7 @@ class ServerService
             'key' => $settings->{'pkg.rdns.api.key'},
             'nameServers' => $this->getNameServers($settings),
         ];
-        $version = $this->app->version();
-        
-        if(version_compare($version, '5.4.36', '>=')) {
-            return $this->app->makeWith($class, $parameters);
-        } else {
-            return $this->app->make($class, $parameters);
-        }
+        return $this->app->makeWith($class, $parameters);
     }
 
     /**

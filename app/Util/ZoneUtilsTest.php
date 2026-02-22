@@ -12,7 +12,7 @@ class ZoneUtilsTest extends RdnsTestCase {
    */
   private $zone;
 
-  public function setUp() {
+  public function setUp(): void {
     $this->zone = new ZoneUtils();
     parent::setUp();
   }

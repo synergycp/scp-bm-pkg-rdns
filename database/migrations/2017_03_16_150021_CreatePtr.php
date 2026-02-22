@@ -31,6 +31,6 @@ class CreatePtr extends Migration
      */
     public function down()
     {
-        Schema::drop('pkg_rdns_ptrs');
+        Schema::dropIfExists('pkg_rdns_ptrs');
     }
 }

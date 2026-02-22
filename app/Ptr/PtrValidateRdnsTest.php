@@ -9,7 +9,7 @@ use Mockery;
 
 class PtrValidateRdnsTest extends RdnsTestCase {
     
-  public function setUp() {
+  public function setUp(): void {
       parent::setUp();
       $this->dns = Mockery::mock(DnsRecordService::class);
   }

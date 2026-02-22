@@ -71,7 +71,7 @@ class PtrControllerTest extends RdnsTestCase {
     $this->dns = $this->mockService(DnsRecordService::class);
   }
 
-  public function tearDown() {
+  public function tearDown(): void {
     $this->deletePtrs();
     $this->externalEntity->delete();
     parent::tearDown();
@@ -164,7 +164,7 @@ class PtrControllerTest extends RdnsTestCase {
       $ip = "9.9.9.9";
       $this->tryCreate(['ip' => $ip]);
       $this->assertResponseStatus(409);
-      $this->assertMessageContains("Invalid PTR, Please ensure that test_create has an A or AAAA DNS record to 9.9.9.9");
+      $this->assertMessageContains("Invalid PTR. Please ensure that test_create has an A or AAAA DNS record to 9.9.9.9.");
     });
   }
 
@@ -182,10 +182,11 @@ class PtrControllerTest extends RdnsTestCase {
 
   protected function canCreateInsideEntityRange(): TestResponse {
     $this->mockDns('test_create', '1.1.1.3', 1);
-    $this->expectsEvents(Events\PtrCreated::class);
 
     $ip = $this->endEntityRange();
-    $result = $this->tryCreate(['ip' => $ip]);
+    $result = $this->assertExpectedDispatched([Events\PtrCreated::class], function () use ($ip) {
+      return $this->tryCreate(['ip' => $ip]);
+    });
 
     $this->assertResponseOk();
     $this->seeJson(['ptr' => 'test_create', 'ip' => $ip]);
@@ -194,9 +195,11 @@ class PtrControllerTest extends RdnsTestCase {
 
   protected function canCreateOutsideEntityRange(): TestResponse {
     $this->mockDns('test_create', '5.5.5.5', 1);
-    $this->expectsEvents(Events\PtrCreated::class);
 
-    $result = $this->tryCreate(['ip' => ($ip = '5.5.5.5')]);
+    $ip = '5.5.5.5';
+    $result = $this->assertExpectedDispatched([Events\PtrCreated::class], function () use ($ip) {
+      return $this->tryCreate(['ip' => $ip]);
+    });
 
     $this->assertResponseOk();
     $this->seeJson([
@@ -291,11 +294,12 @@ class PtrControllerTest extends RdnsTestCase {
   }
 
   protected function canUpdateInsideEntityRange(): TestResponse {
-    $this->expectsEvents(Events\PtrPtrUpdated::class);
-    $this->mockDns('test_edit', '1.1.1.1', 1);  
-    $resp = $this->patch($this->url($this->ptr), [
-      'ptr' => 'test_edit',
-    ]);
+    $this->mockDns('test_edit', '1.1.1.1', 1);
+    $resp = $this->assertExpectedDispatched([Events\PtrPtrUpdated::class], function () {
+      return $this->patch($this->url($this->ptr), [
+        'ptr' => 'test_edit',
+      ]);
+    });
     $this->assertResponseOk();
     $this->assertEquals('test_edit', $resp->getData()->data->ptr);
     $this->assertEquals($this->ptr->ip, $resp->getData()->data->ip);
@@ -303,11 +307,12 @@ class PtrControllerTest extends RdnsTestCase {
   }
 
   protected function canUpdateOutsideEntityRange(): TestResponse {
-    $this->expectsEvents(Events\PtrPtrUpdated::class);
     $this->mockDns('test_edit', '8.8.8.8', 1);
-    $resp = $this->patch($this->url($this->externalPtr), [
-      'ptr' => 'test_edit',
-    ]);
+    $resp = $this->assertExpectedDispatched([Events\PtrPtrUpdated::class], function () {
+      return $this->patch($this->url($this->externalPtr), [
+        'ptr' => 'test_edit',
+      ]);
+    });
     $this->assertResponseOk();
     $this->assertEquals('test_edit', $resp->getData()->data->ptr);
     $this->assertEquals($this->externalPtr->ip, $resp->getData()->data->ip);
@@ -315,16 +320,17 @@ class PtrControllerTest extends RdnsTestCase {
   }
 
   protected function canDeleteInsideEntityRange(): TestResponse {
-    $this->expectsEvents(Events\PtrDeleted::class);
-    $resp = $this->delete($this->url($this->ptr));
+    $resp = $this->assertExpectedDispatched([Events\PtrDeleted::class], function () {
+      return $this->delete($this->url($this->ptr));
+    });
     $this->assertResponseOk();
     return $resp;
   }
 
   protected function canDeleteOutsideEntityRange(): TestResponse {
-    $this->expectsEvents(Events\PtrDeleted::class);
-
-    $resp = $this->delete($this->url($this->externalPtr));
+    $resp = $this->assertExpectedDispatched([Events\PtrDeleted::class], function () {
+      return $this->delete($this->url($this->externalPtr));
+    });
     $this->assertResponseOk();
     return $resp;
   }
