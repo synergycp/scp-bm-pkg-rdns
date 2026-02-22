@@ -67,7 +67,9 @@ class ZoneController
         $ptrs = 0;
         $findPtr = '/([0-9]+)\s+IN\s+PTR\s+(.+)/S';
         $findOrigin = '/\$ORIGIN ([0-9]+).([0-9]+).([0-9]+).in-addr.arpa/S';
+        $validHostname = '/^[a-zA-Z0-9._-]+\.?$/';
         $zoneIpStart = null;
+        $skipped = 0;
 
         while (!$file->eof()) {
             $line = $file->fgets();
@@ -82,9 +84,16 @@ class ZoneController
             }
 
             if ($zoneIpStart && preg_match($findPtr, $line, $matches)) {
+                $ptrValue = trim($matches[2]);
+
+                if (!preg_match($validHostname, $ptrValue) || strlen($ptrValue) > 253) {
+                    $skipped++;
+                    continue;
+                }
+
                 $ptrs++;
                 $ip = $zoneIpStart . $matches[1];
-                $this->ptr->create($ip, $matches[2]);
+                $this->ptr->create($ip, $ptrValue);
             }
         }
 
@@ -92,9 +101,12 @@ class ZoneController
             return response()->error('Could not find $ORIGIN line. Please make sure the $ORIGIN is included.');
         }
 
-        return response()->success(sprintf(
-            'Zone imported: %d PTRs added.',
-            $ptrs
-        ));
+        $message = sprintf('Zone imported: %d PTRs added.', $ptrs);
+
+        if ($skipped > 0) {
+            $message .= sprintf(' %d records skipped (invalid hostname).', $skipped);
+        }
+
+        return response()->success($message);
     }
 }

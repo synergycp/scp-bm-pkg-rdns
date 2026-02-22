@@ -2,13 +2,14 @@
   "data": {
     "slug": "rdns",
     "name": "rDNS",
-    "semver": "2.1.1",
+    "semver": "2.1.2",
     "description": "Allows clients and administrators to create rDNS PTRs from within SynergyCP.",
     "download_url": "https://distribution.synergycp.com/packages/synergycp/rdns/download.tar.gz",
     "release_date_unix": 1771718400,
     "changelog": [
       "Added Cloudflare as a DNS provider for reverse DNS PTR records.",
-      "PTR create/update/delete log messages now include the IP and PTR entry."
+      "PTR create/update/delete log messages now include the IP and PTR entry.",
+      "Security hardening: input validation, authorization checks, error message sanitization, and Cloudflare API response validation."
     ]
   }
 }

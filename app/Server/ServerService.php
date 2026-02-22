@@ -46,7 +46,7 @@ class ServerService
         ];
         $version = $this->app->version();
         
-        if($version >= '5.4.36') {
+        if(version_compare($version, '5.4.36', '>=')) {
             return $this->app->makeWith($class, $parameters);
         } else {
             return $this->app->make($class, $parameters);

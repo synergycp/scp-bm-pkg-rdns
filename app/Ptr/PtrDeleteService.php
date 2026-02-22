@@ -49,7 +49,14 @@ extends DeleteService
      */
     protected function checkCanDelete(Ptr $item)
     {
-        if ($this->auth->is('admin')) {
-        }
+        $this->auth->only([
+            'admin',
+            'integration',
+            'client' => function () use ($item) {
+                if (!$item->entity_id) {
+                    abort(403, 'You do not have access to that PTR.');
+                }
+            },
+        ]);
     }
 }

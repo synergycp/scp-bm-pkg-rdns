@@ -54,7 +54,7 @@ class PtrUpdateService extends UpdateService {
     if ($this->auth->is('client')) {
       foreach($items as $ptr){
         if(!$this->ptrValidator->validate($ptr->ip, $this->input('ptr'))){
-          abort(409, "Invalid PTR, Please ensure that ".$this->input('ptr')." has an A or AAAA DNS record to ".$ptr->ip);
+          abort(409, sprintf('Invalid PTR. Please ensure that %s has an A or AAAA DNS record to %s.', e($this->input('ptr')), e($ptr->ip)));
         }
       }
     }

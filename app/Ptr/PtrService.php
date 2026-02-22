@@ -82,7 +82,7 @@ class PtrService
     public function getEntityId($ip)
     {
         if (!$range = $this->ips->make($ip)) {
-            abort(400, 'Invalid IP address: ' . $ip);
+            abort(400, 'Invalid IP address: ' . e($ip));
         }
 
         $entityQuery = $this->lookup->overlapping($range);

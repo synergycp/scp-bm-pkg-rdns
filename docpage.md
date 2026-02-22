@@ -142,11 +142,15 @@ When SynergyCP creates a new reverse DNS zone in Cloudflare for the first time, 
 
 You must configure these nameservers as the authoritative nameservers for your IP range with your RIR or upstream provider. You can also find the assigned nameservers in your Cloudflare dashboard under the zone's settings.
 
+As of this writing, Cloudflare gives you 30 days to delegate the zone. Reverse DNS lookups _*will not*_ work until the delegation is set. Check your Cloudflare dashboard for the zone statuses.
+
 ---
 
 ### Bind setup
 
 This must be run as root on a fresh Debian server with nothing else installed. It cannot be run on the server Synergy is running on due to port conflicts. Save the details that are shown at the end of the installation.
+
+Note that you do _*NOT*_ need to do this if you're using the Cloudflare method above.
 
 ```
 mkdir -p /scp/dns

@@ -125,7 +125,7 @@ class CloudflareServerControl implements IServerControl {
     }
 
     $response = $this->request('GET', 'zones', ['name' => $zoneName], true);
-    $body = json_decode($response->getBody()->getContents(), true);
+    $body = $this->decodeResponse($response);
 
     if (empty($body['result'])) {
       return $this->createZone($zoneName);
@@ -149,7 +149,7 @@ class CloudflareServerControl implements IServerControl {
       'account' => ['id' => $accountId],
     ]);
 
-    $body = json_decode($response->getBody()->getContents(), true);
+    $body = $this->decodeResponse($response);
     $zoneId = $body['result']['id'];
     $nameServers = $body['result']['name_servers'];
 
@@ -166,7 +166,7 @@ class CloudflareServerControl implements IServerControl {
    */
   private function getAccountId() {
     $response = $this->request('GET', 'accounts', null, true);
-    $body = json_decode($response->getBody()->getContents(), true);
+    $body = $this->decodeResponse($response);
 
     if (empty($body['result'])) {
       throw new \RuntimeException(
@@ -189,13 +189,29 @@ class CloudflareServerControl implements IServerControl {
       'name' => $ptrName,
     ], true);
 
-    $body = json_decode($response->getBody()->getContents(), true);
+    $body = $this->decodeResponse($response);
 
     if (empty($body['result'])) {
       return null;
     }
 
     return $body['result'][0]['id'];
+  }
+
+  /**
+   * @param \Psr\Http\Message\ResponseInterface $response
+   *
+   * @return array
+   */
+  private function decodeResponse($response) {
+    $body = json_decode($response->getBody()->getContents(), true);
+
+    if (isset($body['success']) && $body['success'] === false) {
+      $errors = isset($body['errors']) ? json_encode($body['errors']) : 'Unknown error';
+      throw new \RuntimeException("Cloudflare API error: {$errors}");
+    }
+
+    return $body;
   }
 
   /**

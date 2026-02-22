@@ -13,6 +13,8 @@ extends RestRequest
     public function boot()
     {
         $this->rules = [
+            'ip' => 'ip',
+            'ptr' => 'regex:/^[a-zA-Z0-9._-]+$/|max:253',
         ];
     }
 }
