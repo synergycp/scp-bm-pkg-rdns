@@ -4,6 +4,7 @@ namespace Packages\Rdns\App\Ptr\Listeners;
 
 use App\Log\Log;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\DB;
 use Packages\Rdns\App\Ptr\Events\PtrEvent;
 use Packages\Rdns\App\Server\ServerService;
 
@@ -49,9 +50,16 @@ implements ShouldQueue
             ->first();
 
         if ($log) {
-            $log->timestamps = false;
-            $log->desc = "{$log->desc}. {$info}";
-            $log->save();
+            $newDesc = "{$log->getAttributes()['desc']}. {$info}";
+            $data = $log->data ?: [];
+            $data['description'] = $newDesc;
+
+            DB::table('logs')
+                ->where('id', $log->id)
+                ->update([
+                    'desc' => substr($newDesc, 0, 100),
+                    'data' => json_encode($data),
+                ]);
         }
     }
 }
