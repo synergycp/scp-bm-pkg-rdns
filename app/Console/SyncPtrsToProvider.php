@@ -40,7 +40,7 @@ class SyncPtrsToProvider extends Command
                 $result = $provider->createPtr($ptr->ip, $ptr->ptr);
                 $success++;
 
-                if ($result) {
+                if (is_string($result) && $result !== '') {
                     $bar->clear();
                     $this->line("  {$ptr->ip}: {$result}");
                     $bar->display();

@@ -2,11 +2,12 @@
   "data": {
     "slug": "rdns",
     "name": "rDNS",
-    "semver": "2.1.3",
+    "semver": "2.1.4",
     "description": "Allows clients and administrators to create rDNS PTRs from within SynergyCP.",
     "download_url": "https://distribution.synergycp.com/packages/synergycp/rdns/download.tar.gz",
-    "release_date_unix": 1773817200,
+    "release_date_unix": 1778659200,
     "changelog": [
+      "Fixed rdns:sync-to-dns reporting all records as both succeeded and failed when the provider returns a non-string result.",
       "Fixed entity deletion being blocked by orphan PTR foreign key constraint.",
       "Added Cloudflare as a DNS provider for reverse DNS PTR records.",
       "PTR create/update/delete log messages now include the IP and PTR entry.",
