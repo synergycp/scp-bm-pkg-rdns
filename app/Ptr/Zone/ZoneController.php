@@ -75,12 +75,12 @@ class ZoneController
             $line = $file->fgets();
 
             if (!$zoneIpStart && preg_match($findOrigin, $line, $matches)) {
-                $zoneIpStart = implode([
+                $zoneIpStart = implode('.', [
                     $matches[3],
                     $matches[2],
                     $matches[1],
                     '',
-                ], '.');
+                ]);
             }
 
             if ($zoneIpStart && preg_match($findPtr, $line, $matches)) {

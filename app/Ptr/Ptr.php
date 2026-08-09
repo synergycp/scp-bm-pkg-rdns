@@ -64,7 +64,7 @@ class Ptr
      */
     public function getIpAttribute($value)
     {
-        if (strlen($value)) {
+        if ($value !== null && $value !== '') {
             return inet_ntop($value);
         }
     }

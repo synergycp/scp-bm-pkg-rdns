@@ -6,10 +6,18 @@ class DnsRecordService {
   
   /**
    * @param string $domain
-   * 
-   * @return array 
+   *
+   * @return array
+   *
+   * @throws \RuntimeException when the DNS lookup itself fails (as opposed to returning no records)
    */
   public function getARecords ($domain): array {
-    return dns_get_record($domain, DNS_A + DNS_AAAA);    
+    $records = dns_get_record($domain, DNS_A + DNS_AAAA);
+
+    if ($records === false) {
+      throw new \RuntimeException("DNS lookup failed for {$domain}");
+    }
+
+    return $records;
   }
 }

@@ -18,8 +18,7 @@ class SyncPtrsToProvider extends Command
         $providerClass = get_class($provider);
         $this->info("Using DNS provider: {$providerClass}");
 
-        $ptrs = Ptr::all();
-        $total = $ptrs->count();
+        $total = Ptr::query()->count();
 
         if ($total === 0) {
             $this->info('No PTR records found.');
@@ -35,7 +34,7 @@ class SyncPtrsToProvider extends Command
         $failed = 0;
         $errors = [];
 
-        foreach ($ptrs as $ptr) {
+        foreach (Ptr::query()->cursor() as $ptr) {
             try {
                 $result = $provider->createPtr($ptr->ip, $ptr->ptr);
                 $success++;

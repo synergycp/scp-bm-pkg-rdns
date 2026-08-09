@@ -29,12 +29,28 @@ class PtrValidateRdns {
       foreach($answers as $record) {
           switch($record['type']) {
               case "A":
-                  if ($record['ip'] === $ip) return true;
+                  if ($this->ipsMatch($record['ip'] ?? '', $ip)) return true;
                   break;
               case "AAAA":
-                if ($record['ipv6'] === $ip) return true;
+                if ($this->ipsMatch($record['ipv6'] ?? '', $ip)) return true;
           }
       }
       return false;
+  }
+
+  /**
+   * Compare IPs in binary form so notation differences (IPv6 compression, case) don't cause false negatives.
+   *
+   * @param string $recordIp
+   * @param string $ip
+   *
+   * @return bool
+   */
+  private function ipsMatch(string $recordIp, string $ip): bool {
+      if (!filter_var($recordIp, FILTER_VALIDATE_IP) || !filter_var($ip, FILTER_VALIDATE_IP)) {
+          return false;
+      }
+
+      return inet_pton($recordIp) === inet_pton($ip);
   }
 }

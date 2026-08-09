@@ -53,7 +53,13 @@ class PtrUpdateService extends UpdateService {
   private function setPtr(Collection $items) {
     if ($this->auth->is('client')) {
       foreach($items as $ptr){
-        if(!$this->ptrValidator->validate($ptr->ip, $this->input('ptr'))){
+        try {
+          $valid = $this->ptrValidator->validate($ptr->ip, $this->input('ptr'));
+        } catch (\RuntimeException $exc) {
+          abort(409, sprintf('The DNS lookup for %s failed. Please try again in a few minutes.', e($this->input('ptr'))));
+        }
+
+        if(!$valid){
           abort(409, sprintf('Invalid PTR. Please ensure that %s has an A or AAAA DNS record to %s.', e($this->input('ptr')), e($ptr->ip)));
         }
       }

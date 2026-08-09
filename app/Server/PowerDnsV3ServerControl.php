@@ -132,6 +132,8 @@ class PowerDnsV3ServerControl implements IServerControl {
    * @throws GuzzleException
    */
   private function createZone(IpAddressContract $ip) {
+    $this->assertNameServersConfigured();
+
     $name = $this->zoneUtils->getZoneNameFromIP($ip);
 
     // Get every name server except for the master one.
@@ -150,16 +152,12 @@ class PowerDnsV3ServerControl implements IServerControl {
         ->getResponse()
         ->getBody()
         ->getContents();
-      try {
-        $json = json_decode($body);
-      } catch (\Exception $_) {
-        // If we can't parse the response body as JSON to get the error, throw the original exception.
-        throw $exc;
-      }
+      $json = json_decode($body);
 
-      // Ignore duplicate zone errors.
+      // Ignore duplicate zone errors. If the body isn't JSON, throw the original exception.
       if (
         $exc->getCode() === 422 &&
+        isset($json->error) &&
         $json->error === "Domain '$name' already exists"
       ) {
         return $name;
@@ -185,6 +183,18 @@ class PowerDnsV3ServerControl implements IServerControl {
       sprintf('http://%s/%s', $this->host, $uri),
       ['json' => $data, 'headers' => ['X-API-Key' => $this->key]]
     );
+  }
+
+  /**
+   * The SOA record requires two nameservers (primary + contact), so fail with a
+   * clear message instead of creating a malformed zone.
+   */
+  private function assertNameServersConfigured(): void {
+    if (count($this->nameServers) < 2) {
+      throw new \RuntimeException(
+        'PowerDNS requires at least 2 nameservers in the rDNS Name Servers setting.'
+      );
+    }
   }
 
   /**

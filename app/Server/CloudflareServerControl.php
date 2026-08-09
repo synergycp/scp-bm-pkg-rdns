@@ -78,7 +78,7 @@ class CloudflareServerControl implements IServerControl {
     $ptrName = $this->zoneUtils->getPtrNameFromIP($ip);
     $content = $this->zoneUtils->getCanonicalName($ptr);
 
-    $existingRecordId = $this->findExistingRecord($zoneId, $ptrName);
+    $existingRecordIds = $this->findExistingRecordIds($zoneId, $ptrName);
 
     $data = [
       'type' => self::PTR_TYPE,
@@ -87,10 +87,21 @@ class CloudflareServerControl implements IServerControl {
       'ttl' => self::TTL,
     ];
 
-    if ($existingRecordId) {
-      $this->request('PUT', "zones/{$zoneId}/dns_records/{$existingRecordId}", $data);
+    if ($existingRecordIds) {
+      $recordId = array_shift($existingRecordIds);
+      $this->decodeResponse(
+        $this->request('PUT', "zones/{$zoneId}/dns_records/{$recordId}", $data)
+      );
+
+      // A PTR name should only ever have one record; clean up any duplicates
+      // left behind by concurrent creates.
+      foreach ($existingRecordIds as $duplicateId) {
+        $this->request('DELETE', "zones/{$zoneId}/dns_records/{$duplicateId}");
+      }
     } else {
-      $this->request('POST', "zones/{$zoneId}/dns_records", $data);
+      $this->decodeResponse(
+        $this->request('POST', "zones/{$zoneId}/dns_records", $data)
+      );
     }
 
     return $this->createdZoneInfo;
@@ -105,13 +116,15 @@ class CloudflareServerControl implements IServerControl {
     $zoneId = $this->getZoneId($zoneName);
     $ptrName = $this->zoneUtils->getPtrNameFromIP($ip);
 
-    $existingRecordId = $this->findExistingRecord($zoneId, $ptrName);
+    $existingRecordIds = $this->findExistingRecordIds($zoneId, $ptrName);
 
-    if (!$existingRecordId) {
-      return null;
+    $response = null;
+
+    foreach ($existingRecordIds as $recordId) {
+      $response = $this->request('DELETE', "zones/{$zoneId}/dns_records/{$recordId}");
     }
 
-    return $this->request('DELETE', "zones/{$zoneId}/dns_records/{$existingRecordId}");
+    return $response;
   }
 
   /**
@@ -181,9 +194,9 @@ class CloudflareServerControl implements IServerControl {
    * @param string $zoneId
    * @param string $ptrName
    *
-   * @return string|null
+   * @return array<string>
    */
-  private function findExistingRecord($zoneId, $ptrName) {
+  private function findExistingRecordIds($zoneId, $ptrName) {
     $response = $this->request('GET', "zones/{$zoneId}/dns_records", [
       'type' => self::PTR_TYPE,
       'name' => $ptrName,
@@ -191,11 +204,7 @@ class CloudflareServerControl implements IServerControl {
 
     $body = $this->decodeResponse($response);
 
-    if (empty($body['result'])) {
-      return null;
-    }
-
-    return $body['result'][0]['id'];
+    return array_column($body['result'] ?? [], 'id');
   }
 
   /**
@@ -205,6 +214,10 @@ class CloudflareServerControl implements IServerControl {
    */
   private function decodeResponse($response) {
     $body = json_decode($response->getBody()->getContents(), true);
+
+    if (!is_array($body)) {
+      throw new \RuntimeException('Cloudflare API returned a non-JSON response.');
+    }
 
     if (isset($body['success']) && $body['success'] === false) {
       $errors = isset($body['errors']) ? json_encode($body['errors']) : 'Unknown error';

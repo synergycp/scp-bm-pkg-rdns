@@ -57,8 +57,12 @@ class PtrService
     public function create($ip, $point)
     {
         if ($ptr = $this->ptrs->byIp($ip)) {
-            $ptr->ptr = $point;
-            $ptr->save();
+            if ($ptr->ptr !== $point) {
+                $ptr->ptr = $point;
+                $ptr->save();
+
+                event(new Events\PtrPtrUpdated($ptr));
+            }
 
             return $ptr;
         }
