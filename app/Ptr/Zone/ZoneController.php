@@ -65,11 +65,14 @@ class ZoneController
 
         $file = $request->file('file')->openFile();
         $ptrs = 0;
-        $findPtr = '/([0-9a-fA-F]{1,3}(?:\.[0-9a-fA-F]{1,3})*)\s+IN\s+PTR\s+(.+)/S';
-        // Reverse zone origins: 1-3 reversed octets for IPv4 (/8 through /24),
-        // 1-31 reversed nibbles for IPv6.
-        $findOriginV4 = '/\$ORIGIN\s+((?:[0-9]{1,3}\.){1,3})in-addr\.arpa/Si';
-        $findOriginV6 = '/\$ORIGIN\s+((?:[0-9a-f]\.){1,31})ip6\.arpa/Si';
+        // Record name labels, an optional in-addr.arpa/ip6.arpa suffix for
+        // fully-qualified names, an optional TTL and class, then the target.
+        $findPtr = '/([0-9a-fA-F]{1,3}(?:\.[0-9a-fA-F]{1,3})*)((?:\.in-addr\.arpa|\.ip6\.arpa)\.?)?\s+(?:[0-9]+\s+)?(?:IN\s+)?PTR\s+(.+)/Si';
+        // Reverse zone origins: 0-3 reversed octets for IPv4, 0-31 reversed
+        // nibbles for IPv6, optionally starting with a bare dot
+        // (e.g. "$ORIGIN .in-addr.arpa.").
+        $findOriginV4 = '/\$ORIGIN\s+\.?((?:[0-9]{1,3}\.){0,3})in-addr\.arpa/Si';
+        $findOriginV6 = '/\$ORIGIN\s+\.?((?:[0-9a-f]\.){0,31})ip6\.arpa/Si';
         $validHostname = '/^[a-zA-Z0-9._-]+\.?$/';
         $originLabels = null;
         $isV6 = false;
@@ -78,43 +81,56 @@ class ZoneController
         while (!$file->eof()) {
             $line = $file->fgets();
 
-            if ($originLabels === null) {
-                if (preg_match($findOriginV4, $line, $matches)) {
-                    $originLabels = explode('.', rtrim($matches[1], '.'));
-                } elseif (preg_match($findOriginV6, $line, $matches)) {
-                    $originLabels = explode('.', rtrim($matches[1], '.'));
-                    $isV6 = true;
-                }
-
+            // $ORIGIN can appear multiple times in a bulk file; each one
+            // applies to the relative record names that follow it.
+            if (preg_match($findOriginV4, $line, $matches)) {
+                $originLabels = $matches[1] === '' ? [] : explode('.', rtrim($matches[1], '.'));
+                $isV6 = false;
                 continue;
             }
 
-            if (preg_match($findPtr, $line, $matches)) {
-                $ptrValue = trim($matches[2]);
-
-                if (!preg_match($validHostname, $ptrValue) || strlen($ptrValue) > 253) {
-                    $skipped++;
-                    continue;
-                }
-
-                $ip = $this->compileIp(
-                    explode('.', $matches[1]),
-                    $originLabels,
-                    $isV6
-                );
-
-                if ($ip === null) {
-                    $skipped++;
-                    continue;
-                }
-
-                $ptrs++;
-                $this->ptr->create($ip, $ptrValue);
+            if (preg_match($findOriginV6, $line, $matches)) {
+                $originLabels = $matches[1] === '' ? [] : explode('.', rtrim($matches[1], '.'));
+                $isV6 = true;
+                continue;
             }
+
+            if (!preg_match($findPtr, $line, $matches)) {
+                continue;
+            }
+
+            $ptrValue = trim($matches[3]);
+
+            if (!preg_match($validHostname, $ptrValue) || strlen($ptrValue) > 253) {
+                $skipped++;
+                continue;
+            }
+
+            $labels = explode('.', $matches[1]);
+            $suffix = strtolower($matches[2]);
+
+            if ($suffix !== '') {
+                // Fully-qualified name: it carries the whole address, so no
+                // $ORIGIN is needed. This is how bulk multi-zone dumps look.
+                $ip = $this->compileIp($labels, [], strpos($suffix, 'ip6') !== false);
+            } elseif ($originLabels !== null) {
+                $ip = $this->compileIp($labels, $originLabels, $isV6);
+            } else {
+                // Relative name before any $ORIGIN line.
+                $ip = null;
+            }
+
+            if ($ip === null) {
+                $skipped++;
+                continue;
+            }
+
+            $ptrs++;
+            $this->ptr->create($ip, $ptrValue);
         }
 
-        if ($originLabels === null) {
-            return response()->error('Could not find $ORIGIN line. Please make sure the $ORIGIN is included.');
+        if ($originLabels === null && $ptrs === 0) {
+            return response()->error('Could not find $ORIGIN line or any fully-qualified PTR records. Please make sure the $ORIGIN is included.');
         }
 
         $message = sprintf('Zone imported: %d PTRs added.', $ptrs);

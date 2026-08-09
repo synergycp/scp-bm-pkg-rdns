@@ -223,6 +223,31 @@ class PtrControllerTest extends RdnsTestCase {
     });
   }
 
+  public function testZoneImportBulkQualifiedNames() {
+    $this->asAdminWithPermissions(static::PERMISSIONS, function () {
+      // Bulk dumps use fully-qualified record names spanning multiple zones,
+      // with TTLs and a bare "$ORIGIN .in-addr.arpa." line.
+      $zone = implode("\n", [
+        '$ORIGIN .in-addr.arpa.',
+        '100.226.192.104.in-addr.arpa.   86400   IN      PTR     bulk-a.example.com.',
+        '122.28.1.14.in-addr.arpa.       86400   IN      PTR     bulk-b.example.com.',
+      ]);
+
+      $this->post($this->url() . '/zone', [
+        'file' => UploadedFile::fake()->createWithContent('bulk.db', $zone),
+      ]);
+      $this->assertResponseOk();
+
+      $this->get($this->url() . '?q=104.192.226.100');
+      $this->assertResponseOk();
+      $this->assertResponseResultCount(1);
+
+      $this->get($this->url() . '?q=14.1.28.122');
+      $this->assertResponseOk();
+      $this->assertResponseResultCount(1);
+    });
+  }
+
   public function testPtrNotAssociatedWithIpOnCreate(){
     $this->asAdminWithPermissions(static::PERMISSIONS, function () {
       $this->mockDns('test_create', '1.1.1.3', 1);
