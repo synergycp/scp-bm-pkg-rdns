@@ -77,6 +77,7 @@ class ZoneController
         $originLabels = null;
         $isV6 = false;
         $skipped = 0;
+        $records = [];
 
         while (!$file->eof()) {
             $line = $file->fgets();
@@ -126,14 +127,22 @@ class ZoneController
             }
 
             $ptrs++;
-            $this->ptr->create($ip, $ptrValue);
+            // Collect and import in one batch; a repeated IP keeps the last value.
+            $records[$ip] = $ptrValue;
         }
 
         if ($originLabels === null && $ptrs === 0) {
             return response()->error('Could not find $ORIGIN line or any fully-qualified PTR records. Please make sure the $ORIGIN is included.');
         }
 
-        $message = sprintf('Zone imported: %d PTRs added.', $ptrs);
+        $result = $this->ptr->createMany($records);
+
+        $message = sprintf(
+            'Zone imported: %d PTRs added, %d updated, %d unchanged.',
+            $result['created'],
+            $result['updated'],
+            $result['unchanged']
+        );
 
         if ($skipped > 0) {
             $message .= sprintf(' %d records skipped (invalid hostname or record name).', $skipped);
