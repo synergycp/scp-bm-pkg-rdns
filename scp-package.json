@@ -2,11 +2,12 @@
   "data": {
     "slug": "rdns",
     "name": "rDNS",
-    "semver": "2.3.1",
+    "semver": "2.3.2",
     "description": "Allows clients and administrators to create rDNS PTRs from within SynergyCP.",
     "download_url": "https://distribution.synergycp.com/packages/synergycp/rdns/download.tar.gz",
     "release_date_unix": 1786233600,
     "changelog": [
+      "Documented the SOA record configuration values in the PowerDNS providers (no behavior change).",
       "Zone file imports are much faster: existence checks, entity lookups, and inserts now run as a fixed number of batched queries per import instead of several queries per record. The result message now reports added, updated, and unchanged counts separately.",
       "Zone file import now supports bulk multi-zone files: fully-qualified record names (e.g. 100.226.192.104.in-addr.arpa.) that span multiple zones, optional TTL and class fields, multiple $ORIGIN sections in one file, and bare $ORIGIN .in-addr.arpa. lines.",
       "Zone file import now supports IPv6 (ip6.arpa) zones, fixing the '$ORIGIN error' reported for IPv6 zone imports.",

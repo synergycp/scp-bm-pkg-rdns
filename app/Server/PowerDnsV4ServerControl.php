@@ -16,13 +16,23 @@ class PowerDnsV4ServerControl implements IServerControl {
 
   const SOA_TYPE = 'SOA';
 
+  /**
+   * SOA record fields that follow the two leading nameservers, which fill the
+   * MNAME (primary nameserver) and RNAME slots. The full record content is:
+   * "<mname> <rname> <serial> <refresh> <retry> <expire> <minimum>".
+   *
+   * Note: RNAME should technically be the zone contact in DNS name form
+   * (e.g. "hostmaster.example.com." for hostmaster@example.com), but this
+   * code has always used the second configured nameserver. PowerDNS does not
+   * validate it for Native zones, so it is left as-is to stay consistent
+   * with zones that already exist.
+   */
   const SOA_CONFIG = [
-    // TODO: Comments on what these values mean
-    0,
-    10800,
-    3600,
-    604800,
-    3600,
+    0,      // SERIAL: zone version; unused for Native zones (no serial-based replication)
+    10800,  // REFRESH: secondaries poll the primary every 3 hours
+    3600,   // RETRY: retry a failed refresh after 1 hour
+    604800, // EXPIRE: secondaries drop the zone after 7 days without contact
+    3600,   // MINIMUM: negative-caching TTL (how long resolvers cache NXDOMAIN)
   ];
 
   const ACTION_DELETE = 'DELETE';
