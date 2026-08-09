@@ -158,6 +158,34 @@ class PtrControllerTest extends RdnsTestCase {
     });
   }
 
+  public function testSearchByIpAndPtrHostname() {
+    $this->asAdminWithPermissions(static::PERMISSIONS, function () {
+      // A complete IP is matched against the binary ip column.
+      $this->get($this->url() . '?q=8.8.8.8');
+      $this->assertResponseOk();
+      $this->assertResponseResultCount(1);
+
+      // PTR hostname text search.
+      $this->get($this->url() . '?q=test_ext_ptr_name');
+      $this->assertResponseOk();
+      $this->assertResponseResultCount(1);
+
+      // IPv6 in any notation matches the stored binary form.
+      $v6 = new Ptr();
+      $v6->ptr = 'test_v6_ptr_name';
+      $v6->ip = '2605:9f80:c000:245::2';
+      $v6->save();
+
+      $this->get($this->url() . '?q=2605:9f80:c000:245:0:0:0:2');
+      $this->assertResponseOk();
+      $this->assertResponseResultCount(1);
+
+      $this->get($this->url() . '?q=5.5.5.5');
+      $this->assertResponseOk();
+      $this->assertResponseResultCount(0);
+    });
+  }
+
   public function testPtrNotAssociatedWithIpOnCreate(){
     $this->asAdminWithPermissions(static::PERMISSIONS, function () {
       $this->mockDns('test_create', '1.1.1.3', 1);
