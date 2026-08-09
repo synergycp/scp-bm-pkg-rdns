@@ -7,6 +7,7 @@ use App\Ip\IpAddressRangeContract;
 use App\Ip\IpAddressV4;
 use App\Server\Port\ServerPortWithEntitiesTestNetwork;
 use Illuminate\Foundation\Testing\TestResponse;
+use Illuminate\Http\UploadedFile;
 use Packages\Rdns\App\RdnsTestCase;
 
 class PtrControllerTest extends RdnsTestCase {
@@ -183,6 +184,42 @@ class PtrControllerTest extends RdnsTestCase {
       $this->get($this->url() . '?q=5.5.5.5');
       $this->assertResponseOk();
       $this->assertResponseResultCount(0);
+    });
+  }
+
+  public function testZoneImportIpv4() {
+    $this->asAdminWithPermissions(static::PERMISSIONS, function () {
+      $zone = implode("\n", [
+        '$ORIGIN 1.1.1.in-addr.arpa.',
+        '2    IN    PTR    imported-v4.example.com.',
+      ]);
+
+      $this->post($this->url() . '/zone', [
+        'file' => UploadedFile::fake()->createWithContent('v4.db', $zone),
+      ]);
+      $this->assertResponseOk();
+
+      $this->get($this->url() . '?q=1.1.1.2');
+      $this->assertResponseOk();
+      $this->assertResponseResultCount(1);
+    });
+  }
+
+  public function testZoneImportIpv6() {
+    $this->asAdminWithPermissions(static::PERMISSIONS, function () {
+      $zone = implode("\n", [
+        '$ORIGIN 5.4.2.0.0.0.0.c.0.8.f.9.5.0.6.2.ip6.arpa.',
+        '2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0    IN    PTR    imported-v6.example.com.',
+      ]);
+
+      $this->post($this->url() . '/zone', [
+        'file' => UploadedFile::fake()->createWithContent('v6.db', $zone),
+      ]);
+      $this->assertResponseOk();
+
+      $this->get($this->url() . '?q=2605:9f80:c000:245::2');
+      $this->assertResponseOk();
+      $this->assertResponseResultCount(1);
     });
   }
 

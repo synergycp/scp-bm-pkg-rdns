@@ -2,11 +2,13 @@
   "data": {
     "slug": "rdns",
     "name": "rDNS",
-    "semver": "2.1.6",
+    "semver": "2.2.0",
     "description": "Allows clients and administrators to create rDNS PTRs from within SynergyCP.",
     "download_url": "https://distribution.synergycp.com/packages/synergycp/rdns/download.tar.gz",
     "release_date_unix": 1786233600,
     "changelog": [
+      "Zone file import now supports IPv6 (ip6.arpa) zones, fixing the '$ORIGIN error' reported for IPv6 zone imports.",
+      "Zone file import now supports IPv4 zones of any size (/8, /16, /24) including multi-label record names for classless zones, and skips records with invalid names instead of importing wrong addresses.",
       "Fixed PTR list search: IP addresses are stored in binary form, so text search never matched them. Complete IPv4/IPv6 addresses in any notation now match exactly, and partial addresses (e.g. 64.74.160 or 2605:9f80) match as text on MySQL/MariaDB.",
       "Fixed PTR list search producing an ambiguous SQL column error for client accounts.",
       "Fixed zone file import failing with a fatal error on PHP 8.",
