@@ -178,7 +178,10 @@ class PowerDnsV4ServerControl implements IServerControl {
         'nameservers' => array_map(function ($nameserver) {
           return $this->zoneUtils->getCanonicalName($nameserver);
         }, $nameServers),
-        'records' => [$this->generateSOARecord($name)],
+        // The v4 API takes rrsets here; a 3.x-style flat "records" key is
+        // silently ignored and the zone gets the PowerDNS default SOA
+        // (MNAME "a.misconfigured.powerdns.server.").
+        'rrsets' => [$this->generateSOARrset($canonicalName)],
       ]);
     } catch (ClientException $exc) {
       $body = $exc
@@ -245,20 +248,25 @@ class PowerDnsV4ServerControl implements IServerControl {
   }
 
   /**
-   * @param string $zone
+   * @param string $canonicalName
    *
    * @return array
    */
-  private function generateSOARecord($zone) {
+  private function generateSOARrset($canonicalName) {
+    $nameServers = array_map(function ($nameserver) {
+      return $this->zoneUtils->getCanonicalName($nameserver);
+    }, array_slice($this->nameServers, 0, 2));
+
     return [
+      'name' => $canonicalName,
       'type' => self::SOA_TYPE,
       'ttl' => self::TTL,
-      'name' => $zone,
-      'content' => implode(
-        ' ',
-        array_merge(array_slice($this->nameServers, 0, 2), self::SOA_CONFIG)
-      ),
-      'disabled' => false,
+      'records' => [
+        [
+          'content' => implode(' ', array_merge($nameServers, self::SOA_CONFIG)),
+          'disabled' => false,
+        ],
+      ],
     ];
   }
 

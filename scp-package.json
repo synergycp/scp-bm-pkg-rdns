@@ -2,11 +2,12 @@
   "data": {
     "slug": "rdns",
     "name": "rDNS",
-    "semver": "2.3.2",
+    "semver": "2.3.3",
     "description": "Allows clients and administrators to create rDNS PTRs from within SynergyCP.",
     "download_url": "https://distribution.synergycp.com/packages/synergycp/rdns/download.tar.gz",
     "release_date_unix": 1786233600,
     "changelog": [
+      "Fixed PowerDNS v4 zones being created with the default SOA record (MNAME a.misconfigured.powerdns.server.) instead of the configured nameservers: the v4 API expects rrsets in zone creation, so the previous records payload was silently ignored. Verified against a live PowerDNS 4.3 server. Existing zones are not modified.",
       "Documented the SOA record configuration values in the PowerDNS providers (no behavior change).",
       "Zone file imports are much faster: existence checks, entity lookups, and inserts now run as a fixed number of batched queries per import instead of several queries per record. The result message now reports added, updated, and unchanged counts separately.",
       "Zone file import now supports bulk multi-zone files: fully-qualified record names (e.g. 100.226.192.104.in-addr.arpa.) that span multiple zones, optional TTL and class fields, multiple $ORIGIN sections in one file, and bare $ORIGIN .in-addr.arpa. lines.",
