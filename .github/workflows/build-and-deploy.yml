@@ -63,13 +63,15 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          SLUG=$(jq -r '.slug' index.json)
-          NAME=$(jq -r '.name' index.json)
-          SEMVER=$(jq -r '.semver' index.json)
-          DESCRIPTION=$(jq -r '.description' index.json)
-          DOWNLOAD_URL=$(jq -r '.download_url' index.json)
+          # Escape single quotes for SQL by doubling them; the values are
+          # interpolated into a single-quoted SQL string below.
+          SLUG=$(jq -r '.slug' index.json | sed "s/'/''/g")
+          NAME=$(jq -r '.name' index.json | sed "s/'/''/g")
+          SEMVER=$(jq -r '.semver' index.json | sed "s/'/''/g")
+          DESCRIPTION=$(jq -r '.description' index.json | sed "s/'/''/g")
+          DOWNLOAD_URL=$(jq -r '.download_url' index.json | sed "s/'/''/g")
           RELEASE_DATE_UNIX=$(jq -r '.release_date_unix' index.json)
-          CHANGELOG=$(jq -c '.changelog' index.json)
+          CHANGELOG=$(jq -c '.changelog' index.json | sed "s/'/''/g")
 
           npx wrangler d1 execute ${{ env.D1_DATABASE }} --remote --command "
             INSERT OR REPLACE INTO packages (slug, name, semver, description, download_url, release_date_unix, changelog)
