@@ -2,12 +2,13 @@
   "data": {
     "slug": "rdns",
     "name": "rDNS",
-    "semver": "3.1.7",
+    "semver": "3.1.8",
     "min_app_ver": "5.4.0",
     "description": "Allows clients and administrators to create rDNS PTRs from within SynergyCP.",
     "download_url": "https://distribution.synergycp.com/packages/synergycp/rdns/download.tar.gz",
     "release_date_unix": 1786320000,
     "changelog": [
+      "The add button on the IPv6 tab of the Reverse DNS page now creates the PTR record immediately when clicked; the Save button only applies edits to listed rows. A rejected create (for example when the IPv6 limit is reached) keeps the typed values in the add row for correction.",
       "The delete button on IPv6 rows of the Reverse DNS page now removes the PTR record immediately when clicked, instead of waiting for Save.",
       "The rDNS PTRs list page now has a Server column showing which server each IP belongs to, linking to that server.",
       "IPv6 rows on the Reverse DNS page now have a delete button that removes the PTR record on Save. Also confirmed that a server wipe removes both IPv4 and IPv6 PTR records: deletion is keyed on the linked IP entity, which IPv6 records now always have.",

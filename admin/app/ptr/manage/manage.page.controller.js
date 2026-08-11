@@ -194,13 +194,30 @@
         return;
       }
 
-      var row = { id: null, ip: ip, ptr: ptr };
-      vm.tabs.v6.rows.push(row);
-      if (ptr) {
-        ptrChange(row);
+      // A row without a PTR only exists locally until one is typed in and
+      // saved; a filled-in row is created immediately, so Save is only
+      // needed for edits to listed rows.
+      if (!ptr) {
+        appendV6Row({ id: null, ip: ip, ptr: "" });
+        vm.newV6 = { ip: "", ptr: "" };
+        return;
       }
+
+      $ptr.post({ ip: ip, ptr: ptr }).then(function (created) {
+        appendV6Row({
+          id: created.id,
+          ip: created.ip || ip,
+          ptr: created.ptr,
+        });
+        // Cleared only on success so a rejected create (e.g. the IPv6
+        // limit) keeps the typed values for correction.
+        vm.newV6 = { ip: "", ptr: "" };
+      });
+    }
+
+    function appendV6Row(row) {
+      vm.tabs.v6.rows.push(row);
       vm.hasV6 = true;
-      vm.newV6 = { ip: "", ptr: "" };
 
       // Jump to the last page so the new row is visible.
       vm.tabs.v6.page = Math.max(
