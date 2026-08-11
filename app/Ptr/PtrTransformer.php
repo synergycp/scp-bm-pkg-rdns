@@ -21,7 +21,7 @@ extends Transformer
 
     public function itemPreload($items)
     {
-        $items->load('entity');
+        $items->load('entity.owner.server');
     }
 
     /**
@@ -37,9 +37,34 @@ extends Transformer
 
     private function itemEntity(Ptr $item)
     {
-        return !$item->entity ? null : $item->entity->expose([
+        if (!$item->entity) {
+            return null;
+        }
+
+        return $item->entity->expose([
             'id',
             'name',
-        ]);
+        ]) + [
+            'server' => $this->entityServer($item->entity),
+        ];
+    }
+
+    /**
+     * The server the entity is assigned to, when its owner is a server
+     * port (entities can also be unassigned).
+     *
+     * @param \App\Entity\Entity $entity
+     *
+     * @return array|null
+     */
+    private function entityServer($entity)
+    {
+        $owner = $entity->getOwner();
+
+        if (!$owner || !method_exists($owner, 'server') || !$owner->server) {
+            return null;
+        }
+
+        return $owner->server->expose(['id', 'name']);
     }
 }

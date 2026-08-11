@@ -10,6 +10,7 @@
       bindings: {
         showIp: '=?',
         showPtr: '=?',
+        showServer: '=?',
         showActions: '=?',
       },
       controller: 'PtrTableCtrl as table',
@@ -23,11 +24,13 @@
    * @ngInject
    */
   function tableTemplateUrl(RouteHelpers) {
+    // The ?v= busts browser/proxy caches (template URLs get no md5sum
+    // like package JS does); bump it whenever the template changes.
     return RouteHelpers.trusted(
       RouteHelpers.package('rdns')
         .asset(
           'admin/ptr/list/list.table.html'
-        )
+        ) + '?v=3.1.6'
     );
   }
 
@@ -45,6 +48,7 @@
       _.defaults(table, {
         showIp: true,
         showPtr: true,
+        showServer: true,
         showActions: true,
       });
     }

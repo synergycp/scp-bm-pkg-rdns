@@ -7,6 +7,10 @@ block headings
   th.sortable(ng-if="table.showPtr")
     span(translate="pkg.rdns.admin.ptr.list.heading.PTR")
     sort(col="ptr")
+  //- Literal label: new translate keys in existing lang files show as raw
+  //- key paths for clients with a cached copy (see CLAUDE.md).
+  th(ng-if="table.showServer")
+    span Server
 
 block columns
   td(
@@ -17,3 +21,9 @@ block columns
     ng-if="table.showPtr"
     ng-bind="row.ptr"
   )
+  td(ng-if="table.showServer")
+    a(
+      ng-if="row.entity.server"
+      ui-sref="app.hardware.server.view.manage({id: row.entity.server.id})"
+      ng-bind="row.entity.server.name"
+    )
