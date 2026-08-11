@@ -45,6 +45,7 @@ doctype html
                     tr
                         th(translate="pkg.rdns.client.ptr.form.list.ip.LABEL")
                         th(translate="pkg.rdns.client.ptr.form.list.ptr.LABEL")
+                        th(style="width: 1%")
                 tbody
                     tr(
                         ng-repeat="ptr in vm.tabs.v6.rows | limitTo : vm.pageSize : (vm.tabs.v6.page - 1) * vm.pageSize"
@@ -55,6 +56,9 @@ doctype html
                             ng-model="ptr.ptr",
                             ng-change="vm.change(ptr)"
                             )
+                        td.v-mid
+                            a.btn.btn-default(ng-click="vm.removeV6(ptr)")
+                                span.fa.fa-trash
                     tr
                         td
                             input.form-control(
@@ -63,14 +67,13 @@ doctype html
                             placeholder="2001:db8::1"
                             )
                         td
-                            .input-group
-                                input.form-control(
-                                ng-model="vm.newV6.ptr",
-                                placeholder="host.example.com"
-                                )
-                                span.input-group-btn
-                                    button.btn.btn-default(type="button" ng-click="vm.addV6()")
-                                        span.fa.fa-plus
+                            input.form-control(
+                            ng-model="vm.newV6.ptr",
+                            placeholder="host.example.com"
+                            )
+                        td.v-mid
+                            button.btn.btn-default(type="button" ng-click="vm.addV6()")
+                                span.fa.fa-plus
             .text-danger(ng-if="vm.v6error" ng-bind="vm.v6error")
         .panel-footer.clearfix(ng-if="vm.tabs.v4.rows.length || vm.tab == 'v6'")
             .pull-left(ng-if="vm.tabs[vm.tab].rows.length > vm.pageSizes[0]")

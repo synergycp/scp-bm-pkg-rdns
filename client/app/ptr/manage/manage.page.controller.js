@@ -34,7 +34,9 @@
     vm.nextPage = nextPage;
     vm.pageEnd = pageEnd;
     vm.addV6 = addV6;
+    vm.removeV6 = removeV6;
     var v6entities = [];
+    var v6EntityIps = {};
     var pkg = RouteHelpers.package("rdns");
     var $ptr = pkg.api().all("ptr");
 
@@ -131,8 +133,10 @@
       // addresses are added through the add row.
       var v6ips = _.filter(v6entities, isSingleV6);
       var v6seen = {};
+      v6EntityIps = {};
       _.each(v6ips, function (ip) {
         v6seen[normalizeIp(ip)] = true;
+        v6EntityIps[normalizeIp(ip)] = true;
       });
       var v6rows = _.map(v6ips, toRow);
       _.each(ptrs, function (ptr) {
@@ -203,6 +207,23 @@
         1,
         Math.ceil(vm.tabs.v6.rows.length / vm.pageSize)
       );
+    }
+
+    function removeV6(row) {
+      row.ptr = "";
+      // Registers the record for deletion on Save when the row has a
+      // saved PTR; otherwise just clears any pending change.
+      ptrChange(row);
+
+      // Entity-backed single addresses stay listed like IPv4 rows; ad-hoc
+      // rows disappear from the list.
+      if (!v6EntityIps[normalizeIp(row.ip)]) {
+        var idx = vm.tabs.v6.rows.indexOf(row);
+        if (idx !== -1) {
+          vm.tabs.v6.rows.splice(idx, 1);
+        }
+        pageSizeChanged();
+      }
     }
 
     function isV4Entity(item) {
