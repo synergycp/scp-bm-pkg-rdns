@@ -15,10 +15,19 @@
     vm.serverId = $stateParams.id;
     vm.server = {};
     vm.entities_filter = [];
-    vm.ptrs = [];
+    vm.tabs = {
+      v4: { rows: [], page: 1 },
+      v6: { rows: [], page: 1 },
+    };
+    vm.tab = "v4";
+    vm.pageSize = 50;
     vm.loader = Loader();
     vm.change = ptrChange;
     vm.save = save;
+    vm.setTab = setTab;
+    vm.prevPage = prevPage;
+    vm.nextPage = nextPage;
+    vm.pageEnd = pageEnd;
     var pkg = RouteHelpers.package("rdns");
     var $ptr = pkg.api().all("ptr");
 
@@ -35,10 +44,7 @@
         include_pool_ips: true,
       })
       .then(setEntities)
-      .then(ipRange)
-      .then(ipConcat)
-      .then(unionPtr)
-      .then(setPtrs);
+      .then(loadPtrs);
 
     setSendData();
 
@@ -46,6 +52,113 @@
 
     function setServer(server) {
       vm.server = server;
+    }
+
+    function setTab(name) {
+      vm.tab = name;
+    }
+
+    function prevPage(tab) {
+      if (tab.page > 1) {
+        tab.page--;
+      }
+    }
+
+    function nextPage(tab) {
+      if (tab.page * vm.pageSize < tab.rows.length) {
+        tab.page++;
+      }
+    }
+
+    function pageEnd(tab) {
+      return Math.min(tab.page * vm.pageSize, tab.rows.length);
+    }
+
+    function setEntities(items) {
+      var filter = _.map(items, function (item) {
+        return item.id;
+      });
+      _.setContents(vm.entities_filter, filter);
+      return items;
+    }
+
+    function loadPtrs(entities) {
+      return $ptr
+        .getList({
+          "entity[]": vm.entities_filter,
+        })
+        .then(function (ptrs) {
+          buildRows(entities, ptrs);
+        });
+    }
+
+    function buildRows(entities, ptrs) {
+      var v4ips = ipConcat(
+        _.map(_.filter(entities, isV4Entity), function (item) {
+          return getRange(item.full_ip);
+        })
+      );
+
+      // IPv6 ranges cannot be enumerated the way IPv4 ranges are, so the
+      // IPv6 tab lists single-address entities plus any existing v6 PTRs.
+      var v6ips = _.map(_.filter(entities, isSingleV6Entity), function (item) {
+        return item.full_ip;
+      });
+      var v6seen = {};
+      _.each(v6ips, function (ip) {
+        v6seen[normalizeIp(ip)] = true;
+      });
+      var v6rows = _.map(v6ips, toRow);
+      _.each(ptrs, function (ptr) {
+        if (!isV6Ip(ptr.ip) || v6seen[normalizeIp(ptr.ip)]) {
+          return;
+        }
+        v6seen[normalizeIp(ptr.ip)] = true;
+        v6rows.push({
+          id: ptr.id,
+          ip: ptr.ip,
+          ptr: ptr.ptr,
+        });
+      });
+
+      _.setContents(vm.tabs.v4.rows, _.map(v4ips, toRow));
+      _.setContents(vm.tabs.v6.rows, v6rows);
+
+      function toRow(ip) {
+        var ptr = _.find(ptrs, function (tt) {
+          return normalizeIp(tt.ip) == normalizeIp(ip);
+        });
+        return {
+          id: typeof ptr == "undefined" ? null : ptr.id,
+          ip: ip,
+          ptr: typeof ptr == "undefined" ? null : ptr.ptr,
+        };
+      }
+    }
+
+    function isV4Entity(item) {
+      return !isV6Ip(item.full_ip);
+    }
+
+    function isSingleV6Entity(item) {
+      return (
+        isV6Ip(item.full_ip) &&
+        item.full_ip.indexOf("-") === -1 &&
+        item.full_ip.indexOf("*") === -1 &&
+        item.full_ip.indexOf("/") === -1
+      );
+    }
+
+    function isV6Ip(ip) {
+      return ("" + ip).indexOf(":") !== -1;
+    }
+
+    function normalizeIp(ip) {
+      return ("" + ip).toLowerCase();
+    }
+
+    function allRows() {
+      return vm.tabs.v4.rows.concat(vm.tabs.v6.rows);
     }
 
     function save() {
@@ -67,43 +180,6 @@
           .one("" + item.id)
           .patch(item)
           .then(reList);
-      });
-    }
-
-    function setPtrs(items) {
-      _.setContents(vm.ptrs, items);
-    }
-
-    function setEntities(items) {
-      var filter = _.map(items, function (item) {
-        return item.id;
-      });
-      _.setContents(vm.entities_filter, filter);
-      return items;
-    }
-
-    function unionPtr(items) {
-      return $ptr
-        .getList({
-          "entity[]": vm.entities_filter,
-        })
-        .then(function (ptrs) {
-          return _.map(items, function (item) {
-            var ptr = _.find(ptrs, function (tt) {
-              return tt.ip == item;
-            });
-            return {
-              id: typeof ptr == "undefined" ? null : ptr.id,
-              ip: item,
-              ptr: typeof ptr == "undefined" ? null : ptr.ptr,
-            };
-          });
-        });
-    }
-
-    function ipRange(items) {
-      return _.map(items, function (item) {
-        return getRange(item.full_ip);
       });
     }
 
@@ -178,27 +254,21 @@
     }
 
     function reList(items) {
-      var list = _.map(vm.ptrs, function (item) {
-        if (item.ip == items.ip) {
-          return items;
+      _.each(allRows(), function (row) {
+        if (normalizeIp(row.ip) == normalizeIp(items.ip)) {
+          row.id = items.id;
+          row.ptr = items.ptr;
         }
-        return item;
       });
-
-      _.assign(vm.ptrs, list);
     }
 
     function removeItems(items) {
-      var list = _.map(vm.ptrs, function (item) {
-        if (item.id == items.route) {
-          item.id = "";
-          item.ptr = "";
-          return item;
+      _.each(allRows(), function (row) {
+        if (row.id == items.route) {
+          row.id = "";
+          row.ptr = "";
         }
-        return item;
       });
-
-      _.assign(vm.ptrs, list);
     }
 
     function setSendData() {

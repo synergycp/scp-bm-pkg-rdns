@@ -16,14 +16,19 @@ doctype html
                     span.fa.fa-arrow-left
                     span(translate="pkg.rdns.admin.manage.BACK" style="margin-left: 4px")
         .panel-body
-            table.table(ng-if="vm.ptrs.length")
+            ul.nav.nav-tabs(style="margin-bottom: 12px")
+                li(ng-class="{active: vm.tab == 'v4'}")
+                    a(href="" ng-click="vm.setTab('v4')") IPv4 ({{vm.tabs.v4.rows.length}})
+                li(ng-class="{active: vm.tab == 'v6'}")
+                    a(href="" ng-click="vm.setTab('v6')") IPv6 ({{vm.tabs.v6.rows.length}})
+            table.table(ng-if="vm.tabs[vm.tab].rows.length")
                 thead
                     tr
                         th(translate="pkg.rdns.admin.ptr.form.list.ip.LABEL")
                         th(translate="pkg.rdns.admin.ptr.form.list.ptr.LABEL")
                 tbody
                     tr(
-                        ng-repeat="ptr in vm.ptrs"
+                        ng-repeat="ptr in vm.tabs[vm.tab].rows | limitTo : vm.pageSize : (vm.tabs[vm.tab].page - 1) * vm.pageSize"
                     )
                         td.v-mid(ng-bind="ptr.ip")
                         td
@@ -32,9 +37,22 @@ doctype html
                             ng-change="vm.change(ptr)"
                             )
             span(
-                ng-if="!vm.ptrs.length"
+                ng-if="!vm.tabs[vm.tab].rows.length"
                 translate="pkg.rdns.admin.ptr.alert.alert-info"
             )
-        .panel-footer.clearfix(ng-if="vm.ptrs.length")
+        .panel-footer.clearfix(ng-if="vm.tabs.v4.rows.length || vm.tabs.v6.rows.length")
+            .pull-left(ng-if="vm.tabs[vm.tab].rows.length > vm.pageSize")
+                .btn-group.btn-group-sm
+                    a.btn.btn-default(
+                        ng-click="vm.prevPage(vm.tabs[vm.tab])"
+                        ng-class="{disabled: vm.tabs[vm.tab].page == 1}"
+                    )
+                        span.fa.fa-chevron-left
+                    a.btn.btn-default(
+                        ng-click="vm.nextPage(vm.tabs[vm.tab])"
+                        ng-class="{disabled: vm.pageEnd(vm.tabs[vm.tab]) >= vm.tabs[vm.tab].rows.length}"
+                    )
+                        span.fa.fa-chevron-right
+                span(style="margin-left: 8px") {{(vm.tabs[vm.tab].page - 1) * vm.pageSize + 1}}&ndash;{{vm.pageEnd(vm.tabs[vm.tab])}} / {{vm.tabs[vm.tab].rows.length}}
             .pull-right
                 button.btn.btn-primary(translate="pkg.rdns.admin.ptr.form.SAVE")

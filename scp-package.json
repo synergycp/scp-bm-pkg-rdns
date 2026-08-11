@@ -2,12 +2,13 @@
   "data": {
     "slug": "rdns",
     "name": "rDNS",
-    "semver": "3.0.2",
+    "semver": "3.0.3",
     "min_app_ver": "5.4.0",
     "description": "Allows clients and administrators to create rDNS PTRs from within SynergyCP.",
     "download_url": "https://distribution.synergycp.com/packages/synergycp/rdns/download.tar.gz",
     "release_date_unix": 1786320000,
     "changelog": [
+      "The Reverse DNS page now separates IPv4 and IPv6 addresses into tabs (IPv4 selected by default) and paginates both lists at 50 rows per page. The IPv6 tab lists single-address IP entities plus existing IPv6 PTR records, since IPv6 ranges are too large to enumerate row-by-row.",
       "Fixed the new Reverse DNS page and server panel showing raw translation keys (e.g. pkg.rdns.admin.ptr.manage.LINK) when a cached copy of the language file predates 3.0.0: the new labels moved to a new language file that caches have never seen.",
       "Fixed the server page rDNS panel rendering as an empty expanding box with no link after upgrading to 3.0.0: caching proxies could keep serving the pre-3.0 panel template because template URLs are not cache-busted. The template file was renamed so caches are bypassed.",
       "rDNS management has moved from an expanding box on the server page to its own dedicated page in both the admin and client portals, reached via a Manage Reverse DNS button on the server page (URL: /hardware/server/:id/rdns). This prepares the UI for upcoming IPv6 rDNS support, where per-server record lists can be large."

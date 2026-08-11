@@ -3,38 +3,56 @@ doctype html
 .row
   .col-md-8
     form.panel.panel-default(
-      ng-submit="vm.save()",
-      ng-class="vm.loader.class"
+        ng-submit="vm.save()",
+        ng-class="vm.loader.class"
     )
-      .loader
-      .panel-heading
-        h3.panel-title
-          span(translate="pkg.rdns.client.manage.TITLE")
-          small(ng-if="vm.server.name" style="margin-left: 8px" ng-bind="vm.server.name")
-        .btn-group.btn-group-xs.pull-right
-          a.btn.btn-default(ui-sref="app.hardware.server.view.manage({id: vm.serverId})")
-            span.fa.fa-arrow-left
-            span(translate="pkg.rdns.client.manage.BACK" style="margin-left: 4px")
-      .panel-body
-        table.table(ng-if="vm.ptrs.length")
-          thead
-            tr
-              th(translate="pkg.rdns.client.ptr.form.list.ip.LABEL")
-              th(translate="pkg.rdns.client.ptr.form.list.ptr.LABEL")
-          tbody
-            tr(
-            ng-repeat="ptr in vm.ptrs"
+        .loader
+        .panel-heading
+            h3.panel-title
+                span(translate="pkg.rdns.client.manage.TITLE")
+                small(ng-if="vm.server.name" style="margin-left: 8px" ng-bind="vm.server.name")
+            .btn-group.btn-group-xs.pull-right
+                a.btn.btn-default(ui-sref="app.hardware.server.view.manage({id: vm.serverId})")
+                    span.fa.fa-arrow-left
+                    span(translate="pkg.rdns.client.manage.BACK" style="margin-left: 4px")
+        .panel-body
+            ul.nav.nav-tabs(style="margin-bottom: 12px")
+                li(ng-class="{active: vm.tab == 'v4'}")
+                    a(href="" ng-click="vm.setTab('v4')") IPv4 ({{vm.tabs.v4.rows.length}})
+                li(ng-class="{active: vm.tab == 'v6'}")
+                    a(href="" ng-click="vm.setTab('v6')") IPv6 ({{vm.tabs.v6.rows.length}})
+            table.table(ng-if="vm.tabs[vm.tab].rows.length")
+                thead
+                    tr
+                        th(translate="pkg.rdns.client.ptr.form.list.ip.LABEL")
+                        th(translate="pkg.rdns.client.ptr.form.list.ptr.LABEL")
+                tbody
+                    tr(
+                        ng-repeat="ptr in vm.tabs[vm.tab].rows | limitTo : vm.pageSize : (vm.tabs[vm.tab].page - 1) * vm.pageSize"
+                    )
+                        td.v-mid(ng-bind="ptr.ip")
+                        td
+                            input.form-control(
+                            ng-model="ptr.ptr",
+                            ng-change="vm.change(ptr)"
+                            )
+            span(
+                ng-if="!vm.tabs[vm.tab].rows.length"
+                translate="pkg.rdns.client.ptr.alert.alert-info"
             )
-              td.v-mid(ng-bind="ptr.ip")
-              td
-                input.form-control(
-                ng-model="ptr.ptr",
-                ng-change="vm.change(ptr)"
-                )
-        span(
-        ng-if="!vm.ptrs.length"
-        translate="pkg.rdns.client.ptr.alert.alert-info"
-        )
-      .panel-footer.clearfix(ng-if="vm.ptrs.length")
-        .pull-right
-          button.btn.btn-primary(translate="pkg.rdns.client.ptr.form.SAVE")
+        .panel-footer.clearfix(ng-if="vm.tabs.v4.rows.length || vm.tabs.v6.rows.length")
+            .pull-left(ng-if="vm.tabs[vm.tab].rows.length > vm.pageSize")
+                .btn-group.btn-group-sm
+                    a.btn.btn-default(
+                        ng-click="vm.prevPage(vm.tabs[vm.tab])"
+                        ng-class="{disabled: vm.tabs[vm.tab].page == 1}"
+                    )
+                        span.fa.fa-chevron-left
+                    a.btn.btn-default(
+                        ng-click="vm.nextPage(vm.tabs[vm.tab])"
+                        ng-class="{disabled: vm.pageEnd(vm.tabs[vm.tab]) >= vm.tabs[vm.tab].rows.length}"
+                    )
+                        span.fa.fa-chevron-right
+                span(style="margin-left: 8px") {{(vm.tabs[vm.tab].page - 1) * vm.pageSize + 1}}&ndash;{{vm.pageEnd(vm.tabs[vm.tab])}} / {{vm.tabs[vm.tab].rows.length}}
+            .pull-right
+                button.btn.btn-primary(translate="pkg.rdns.client.ptr.form.SAVE")
