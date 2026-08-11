@@ -19,7 +19,7 @@
       controller: 'PkgRdnsServerPtrCtrl as vm',
       // The ?v= busts browser/proxy caches (template URLs get no md5sum
       // like package JS does); bump it whenever the template changes.
-      templateUrl: pkg.asset('admin/ptr/manage/manage.page.html') + '?v=3.1.1',
+      templateUrl: pkg.asset('admin/ptr/manage/manage.page.html') + '?v=3.1.2',
       resolve: helper.resolveFor(pkg.lang('admin:ptr'), pkg.lang('admin:manage')),
     });
   }
