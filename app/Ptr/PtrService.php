@@ -2,6 +2,7 @@
 
 namespace Packages\Rdns\App\Ptr;
 
+use App\Entity\Entity;
 use App\Entity\EntityFilterService;
 use App\Entity\LookupService;
 use App\Ip\IpService;
@@ -189,7 +190,24 @@ class PtrService
 
         $entityIds = [];
 
-        foreach ($families as $bins) {
+        foreach ($families as $len => $bins) {
+            // The parent entity lookup only matches the IPv4 columns, so
+            // IPv6 records are matched against entities.v6_address instead.
+            if ($len === 16) {
+                $candidates = $this->ipv6EntityCandidates();
+
+                foreach ($bins as $key => $bin) {
+                    foreach ($candidates as $candidate) {
+                        if ($this->ipv6RangeCovers($candidate['v6_address'], $bin)) {
+                            $entityIds[$key] = $candidate['id'];
+                            break;
+                        }
+                    }
+                }
+
+                continue;
+            }
+
             $min = $max = null;
 
             foreach ($bins as $bin) {
@@ -273,6 +291,20 @@ class PtrService
             abort(400, 'Invalid IP address: ' . e($ip));
         }
 
+        // The parent entity lookup (scopeHasIpRange) only matches the IPv4
+        // columns (ip/range_end/gateway); IPv6 assignments live in
+        // entities.v6_address and are matched here.
+        $binary = inet_pton($ip);
+        if (is_string($binary) && strlen($binary) === 16) {
+            foreach ($this->ipv6EntityCandidates() as $candidate) {
+                if ($this->ipv6RangeCovers($candidate['v6_address'], $binary)) {
+                    return $candidate['id'];
+                }
+            }
+
+            return null;
+        }
+
         $entityQuery = $this->lookup->overlapping($range);
 
         $this->entityFilter->viewable($entityQuery);
@@ -282,5 +314,71 @@ class PtrService
         }
 
         return $entity->getKey();
+    }
+
+    /**
+     * Entities with an IPv6 assignment, filtered to those viewable by the
+     * current auth (so clients only match their own entities).
+     *
+     * @return array<int, array{id: int, v6_address: string}>
+     */
+    private function ipv6EntityCandidates()
+    {
+        $query = Entity::query()
+            ->whereNotNull('entities.v6_address')
+            ->where('entities.v6_address', '!=', '');
+
+        $this->entityFilter->viewable($query);
+
+        return $query
+            ->orderBy('entities.id')
+            ->get(['entities.id', 'entities.v6_address'])
+            ->map(function ($entity) {
+                return [
+                    'id' => $entity->getKey(),
+                    'v6_address' => (string) $entity->v6_address,
+                ];
+            })
+            ->all();
+    }
+
+    /**
+     * Whether an entities.v6_address value covers a binary IPv6 address.
+     * The value is either a CIDR (2605:9f80::/64) or a bare address, which
+     * only matches exactly.
+     *
+     * @param string $v6Address
+     * @param string $bin 16-byte inet_pton form
+     *
+     * @return bool
+     */
+    private function ipv6RangeCovers($v6Address, $bin)
+    {
+        $parts = explode('/', trim($v6Address), 2);
+        $base = inet_pton($parts[0]);
+
+        if (!is_string($base) || strlen($base) !== 16) {
+            return false;
+        }
+
+        $prefix = isset($parts[1]) ? (int) $parts[1] : 128;
+        if ($prefix < 0 || $prefix > 128) {
+            return false;
+        }
+
+        $bytes = intdiv($prefix, 8);
+        $bits = $prefix % 8;
+
+        if ($bytes > 0 && strncmp($bin, $base, $bytes) !== 0) {
+            return false;
+        }
+
+        if ($bits === 0) {
+            return true;
+        }
+
+        $mask = (0xff << (8 - $bits)) & 0xff;
+
+        return (ord($bin[$bytes]) & $mask) === (ord($base[$bytes]) & $mask);
     }
 }
