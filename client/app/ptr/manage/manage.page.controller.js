@@ -332,6 +332,15 @@
     }
 
     function save() {
+      // A filled-in add row is committed implicitly so users are not
+      // required to click the add button before saving.
+      if (("" + (vm.newV6.ip || "")).trim()) {
+        addV6();
+        if (vm.v6error) {
+          return;
+        }
+      }
+
       var data = getData();
 
       _.each(data.post, function (item) {
