@@ -73,7 +73,7 @@ doctype html
                                         span.fa.fa-plus
             .text-danger(ng-if="vm.v6error" ng-bind="vm.v6error")
         .panel-footer.clearfix(ng-if="vm.tabs.v4.rows.length || vm.tab == 'v6'")
-            .pull-left(ng-if="vm.tabs[vm.tab].rows.length > vm.pageSize")
+            .pull-left(ng-if="vm.tabs[vm.tab].rows.length > vm.pageSizes[0]")
                 .btn-group.btn-group-sm
                     a.btn.btn-default(
                         ng-click="vm.prevPage(vm.tabs[vm.tab])"
@@ -86,5 +86,11 @@ doctype html
                     )
                         span.fa.fa-chevron-right
                 span(style="margin-left: 8px") {{(vm.tabs[vm.tab].page - 1) * vm.pageSize + 1}}&ndash;{{vm.pageEnd(vm.tabs[vm.tab])}} / {{vm.tabs[vm.tab].rows.length}}
+                select.form-control.input-sm(
+                    style="width: auto; display: inline-block; margin-left: 8px",
+                    ng-model="vm.pageSize",
+                    ng-options="size for size in vm.pageSizes",
+                    ng-change="vm.pageSizeChanged()"
+                )
             .pull-right
                 button.btn.btn-primary(translate="pkg.rdns.client.ptr.form.SAVE")

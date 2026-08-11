@@ -2,12 +2,14 @@
   "data": {
     "slug": "rdns",
     "name": "rDNS",
-    "semver": "3.1.0",
+    "semver": "3.1.1",
     "min_app_ver": "5.4.0",
     "description": "Allows clients and administrators to create rDNS PTRs from within SynergyCP.",
     "download_url": "https://distribution.synergycp.com/packages/synergycp/rdns/download.tar.gz",
     "release_date_unix": 1786320000,
     "changelog": [
+      "Fixed the IPv6 tab not appearing on the Reverse DNS page: entity IPv6 assignments are stored in the v6_address field rather than full_ip, so servers with IPv6 on their IP entities did not get the tab. IPv6-only entities no longer break the IPv4 list.",
+      "The Reverse DNS page now defaults to 20 rows per page, with a page size selector offering 50, 100, and 500 rows.",
       "The IPv6 tab on the Reverse DNS page now supports adding PTR records for individual IPv6 addresses, validated against the IPv6 ranges assigned to the server, instead of attempting to list every address in a range. The tab is hidden when the server has no IPv6 entities and no existing IPv6 PTR records.",
       "New IPv6 rDNS Limit setting (default 20) caps how many IPv6 PTR records a client can create per IP entity; admins are not limited. Clients get a validation error when the limit is reached.",
       "Package page templates now carry a version marker in their URLs so browser and proxy caches cannot serve stale templates after an upgrade.",

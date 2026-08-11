@@ -21,7 +21,9 @@
     };
     vm.tab = "v4";
     vm.hasV6 = false;
-    vm.pageSize = 50;
+    vm.pageSize = 20;
+    vm.pageSizes = [20, 50, 100, 500];
+    vm.pageSizeChanged = pageSizeChanged;
     vm.newV6 = { ip: "", ptr: "" };
     vm.v6error = null;
     vm.loader = Loader();
@@ -79,6 +81,15 @@
       return Math.min(tab.page * vm.pageSize, tab.rows.length);
     }
 
+    function pageSizeChanged() {
+      _.each([vm.tabs.v4, vm.tabs.v6], function (tab) {
+        var last = Math.max(1, Math.ceil(tab.rows.length / vm.pageSize));
+        if (tab.page > last) {
+          tab.page = last;
+        }
+      });
+    }
+
     function setEntities(items) {
       var filter = _.map(items, function (item) {
         return item.id;
@@ -104,9 +115,16 @@
         })
       );
 
-      v6entities = _.map(_.filter(entities, isV6Entity), function (item) {
-        return item.full_ip;
-      });
+      // Entity IPv6 assignments live in v6_address (optionally with a
+      // /prefix), not in full_ip, which is IPv4-only.
+      v6entities = _.filter(
+        _.map(entities, function (item) {
+          return item.v6_address;
+        }),
+        function (v6) {
+          return !!v6;
+        }
+      );
 
       // IPv6 ranges are too large to enumerate row-by-row, so the IPv6 tab
       // lists single-address entities plus existing v6 PTRs, and new
@@ -188,11 +206,9 @@
     }
 
     function isV4Entity(item) {
-      return !isV6Ip(item.full_ip);
-    }
-
-    function isV6Entity(item) {
-      return isV6Ip(item.full_ip);
+      // Entities can be IPv6-only (null v4 address); those must not go
+      // through the IPv4 range expansion.
+      return !!item.address && ("" + item.full_ip).indexOf(".") !== -1;
     }
 
     function isSingleV6(ip) {

@@ -19,6 +19,7 @@ This package adds reverse DNS (PTR record) management to SynergyCP. It supports 
 - `pkg_rdns_ptrs.ip` is `VARBINARY(16)` holding the raw `inet_pton()` form (4 bytes for IPv4, 16 for IPv6). A text `LIKE` against it never matches; any comparison must use binary values.
 - `PtrSearch` overrides `findWord()` (same pattern as the parent's `PoolSearch`/`ServerSearch`): complete IPv4/IPv6 addresses in any notation are matched exactly via `inet_pton()`, and partial addresses are matched with `INET6_NTOA(ip) LIKE ...` on MySQL/MariaDB, which renders the same canonical text the UI shows. Other drivers (sqlite in tests) skip the partial branch.
 - Always table-qualify columns in search/query code: the client listing joins `entities`, which has its own `ip` column — an unqualified `ip` is ambiguous SQL.
+- Parent `entities` rows carry IPv4 in `ip`/`full_ip` (range suffix format `1.2.3.4 - 10`) and IPv6 separately in `v6_address` (optionally with a `/prefix`, e.g. `2605:9f80::200/64`). `full_ip` never contains IPv6 — frontend code that needs an entity's IPv6 must read `v6_address`. Entities can be IPv6-only (`address` null), which the IPv4 range expansion must skip.
 - When comparing or min/maxing binary IP strings in PHP, use `strcmp()` loops — `min()`/`max()`/`==` compare numeric-looking binary strings numerically (e.g. bytes `"1e50"`), breaking byte order. Never use raw binary as a PHP array key (numeric-string casting); prefix it (e.g. `'k' . bin2hex($bin)`).
 
 ## Provider Notes (PowerDNS)
