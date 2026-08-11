@@ -210,20 +210,36 @@
     }
 
     function removeV6(row) {
-      row.ptr = "";
-      // Registers the record for deletion on Save when the row has a
-      // saved PTR; otherwise just clears any pending change.
-      ptrChange(row);
+      clearSendData(row.ip);
 
-      // Entity-backed single addresses stay listed like IPv4 rows; ad-hoc
-      // rows disappear from the list.
-      if (!v6EntityIps[normalizeIp(row.ip)]) {
-        var idx = vm.tabs.v6.rows.indexOf(row);
-        if (idx !== -1) {
-          vm.tabs.v6.rows.splice(idx, 1);
-        }
-        pageSizeChanged();
+      // Unsaved rows only exist locally.
+      if (!row.id) {
+        dropV6Row(row);
+        return;
       }
+
+      // Deletes immediately, without waiting for Save.
+      $ptr
+        .one("" + row.id)
+        .remove()
+        .then(function () {
+          row.id = null;
+          row.ptr = "";
+
+          // Entity-backed single addresses stay listed like IPv4 rows;
+          // ad-hoc rows disappear from the list.
+          if (!v6EntityIps[normalizeIp(row.ip)]) {
+            dropV6Row(row);
+          }
+        });
+    }
+
+    function dropV6Row(row) {
+      var idx = vm.tabs.v6.rows.indexOf(row);
+      if (idx !== -1) {
+        vm.tabs.v6.rows.splice(idx, 1);
+      }
+      pageSizeChanged();
     }
 
     function isV4Entity(item) {
