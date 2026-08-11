@@ -92,7 +92,7 @@ jobs:
           curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}" \
             -H "Content-Type: application/json" \
-            --data '{"files":["https://distribution.synergycp.com/${{ env.PACKAGE_PATH }}/download.tar.gz"]}'
+            --data '{"files":["https://distribution.synergycp.com/${{ env.PACKAGE_PATH }}/download.tar.gz","https://api.packages.synergycp.com/package/synergycp/rdns"]}'
 
       - name: Notify Slack on success
         if: success()

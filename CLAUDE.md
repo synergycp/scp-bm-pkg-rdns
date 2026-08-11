@@ -87,4 +87,6 @@ Provider settings are stored in the `settings` table under the `pkg.rdns.*` name
 
 ## Admin UI Gotchas
 
+- **Template URLs are not cache-busted.** The parent app appends `?md5sum=` only to the package JS files it loads; template HTML fetched via `pkg.asset(...)` keeps a stable URL, and caching proxies (e.g. Cloudflare in front of a customer install) can serve a stale template against new JS indefinitely (symptom in 3.0.0: new panel factory + cached old template rendered a collapsed empty box). When a template's content changes, rename the file (as done for `link.panel.html`) so the URL changes.
+
 - The SettingsTab decorator in `settings.config.js` replaces `tab.items` to hide/show fields based on the selected provider. This `ng-repeat` re-render can reset Angular form controls to `$pristine`, preventing saves. Any code that modifies `tab.items` inside `onFieldChanged` must re-mark the changed control as `$dirty` via `$setDirty()` afterward.
