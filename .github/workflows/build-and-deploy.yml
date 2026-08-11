@@ -68,14 +68,15 @@ jobs:
           SLUG=$(jq -r '.slug' index.json | sed "s/'/''/g")
           NAME=$(jq -r '.name' index.json | sed "s/'/''/g")
           SEMVER=$(jq -r '.semver' index.json | sed "s/'/''/g")
+          MIN_APP_VER=$(jq -r '.min_app_ver' index.json | sed "s/'/''/g")
           DESCRIPTION=$(jq -r '.description' index.json | sed "s/'/''/g")
           DOWNLOAD_URL=$(jq -r '.download_url' index.json | sed "s/'/''/g")
           RELEASE_DATE_UNIX=$(jq -r '.release_date_unix' index.json)
           CHANGELOG=$(jq -c '.changelog' index.json | sed "s/'/''/g")
 
           npx wrangler d1 execute ${{ env.D1_DATABASE }} --remote --command "
-            INSERT OR REPLACE INTO packages (slug, name, semver, description, download_url, release_date_unix, changelog)
-            VALUES ('$SLUG', '$NAME', '$SEMVER', '$DESCRIPTION', '$DOWNLOAD_URL', $RELEASE_DATE_UNIX, '$CHANGELOG')
+            INSERT OR REPLACE INTO packages (slug, name, semver, min_app_ver, description, download_url, release_date_unix, changelog)
+            VALUES ('$SLUG', '$NAME', '$SEMVER', '$MIN_APP_VER', '$DESCRIPTION', '$DOWNLOAD_URL', $RELEASE_DATE_UNIX, '$CHANGELOG')
           "
 
       - name: Upload to R2
