@@ -11,6 +11,7 @@ You can host a DNS server that answers with the hostname of the IP address that 
 ## Features
 
 - Manage PTR records for both IPv4 and IPv6 addresses, synced automatically to your DNS provider.
+- Manage a server's PTR records on a dedicated Reverse DNS page in both the admin and client portals, linked from the server's page.
 - Search PTRs by full or partial IP address (IPv4 or IPv6) or by hostname.
 - Import BIND-style reverse zone files: standard `in-addr.arpa` and `ip6.arpa` zones of any size, as well as bulk multi-zone dumps with fully-qualified record names. Imports are batched for speed and report added, updated, and unchanged counts.
 - Migrate between DNS providers with the `rdns:sync-to-dns` artisan command, which re-syncs every stored PTR to the currently configured provider.

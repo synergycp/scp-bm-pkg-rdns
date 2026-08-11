@@ -61,6 +61,11 @@
       }
     }
   },
+  "manage": {
+    "TITLE": "Reverse DNS",
+    "LINK": "Manage Reverse DNS",
+    "BACK": "Back to Server"
+  },
   "modal": {
     "delete": {
       "TITLE": "Delete rDNS PTR",

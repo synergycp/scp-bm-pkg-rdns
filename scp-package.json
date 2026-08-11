@@ -2,34 +2,12 @@
   "data": {
     "slug": "rdns",
     "name": "rDNS",
-    "semver": "2.3.4",
+    "semver": "3.0.0",
     "description": "Allows clients and administrators to create rDNS PTRs from within SynergyCP.",
     "download_url": "https://distribution.synergycp.com/packages/synergycp/rdns/download.tar.gz",
-    "release_date_unix": 1786233600,
+    "release_date_unix": 1786320000,
     "changelog": [
-      "Documentation updates: README feature overview and developer notes (no behavior change).",
-      "Fixed PowerDNS v4 zones being created with the default SOA record (MNAME a.misconfigured.powerdns.server.) instead of the configured nameservers: the v4 API expects rrsets in zone creation, so the previous records payload was silently ignored. Verified against a live PowerDNS 4.3 server. Existing zones are not modified.",
-      "Documented the SOA record configuration values in the PowerDNS providers (no behavior change).",
-      "Zone file imports are much faster: existence checks, entity lookups, and inserts now run as a fixed number of batched queries per import instead of several queries per record. The result message now reports added, updated, and unchanged counts separately.",
-      "Zone file import now supports bulk multi-zone files: fully-qualified record names (e.g. 100.226.192.104.in-addr.arpa.) that span multiple zones, optional TTL and class fields, multiple $ORIGIN sections in one file, and bare $ORIGIN .in-addr.arpa. lines.",
-      "Zone file import now supports IPv6 (ip6.arpa) zones, fixing the '$ORIGIN error' reported for IPv6 zone imports.",
-      "Zone file import now supports IPv4 zones of any size (/8, /16, /24) including multi-label record names for classless zones, and skips records with invalid names instead of importing wrong addresses.",
-      "Fixed PTR list search: IP addresses are stored in binary form, so text search never matched them. Complete IPv4/IPv6 addresses in any notation now match exactly, and partial addresses (e.g. 64.74.160 or 2605:9f80) match as text on MySQL/MariaDB.",
-      "Fixed PTR list search producing an ambiguous SQL column error for client accounts.",
-      "Fixed zone file import failing with a fatal error on PHP 8.",
-      "Zone file imports that change an existing PTR now sync the change to the DNS provider and log it.",
-      "Added connection and request timeouts to all DNS provider API calls so a hung provider cannot stall queue workers.",
-      "DNS sync and delete jobs now retry with backoff and write an admin-visible log entry when retries are exhausted.",
-      "Client PTR validation no longer errors when the DNS lookup itself fails, and IPv6 addresses are compared in binary form to tolerate notation differences.",
-      "Cloudflare: API responses are validated, duplicate PTR records are cleaned up on create, and all matching records are removed on delete.",
-      "PowerDNS: the original API error is no longer masked when the response body is not JSON, and zone creation requires at least 2 configured nameservers.",
-      "An unrecognized DNS provider type setting now raises an error instead of silently using the SynergyCP API provider.",
-      "rdns:sync-to-dns now streams records from the database to reduce memory usage on large tables.",
-      "Fixed rdns:sync-to-dns reporting all records as both succeeded and failed when the provider returns a non-string result.",
-      "Fixed entity deletion being blocked by orphan PTR foreign key constraint.",
-      "Added Cloudflare as a DNS provider for reverse DNS PTR records.",
-      "PTR create/update/delete log messages now include the IP and PTR entry.",
-      "Security hardening: input validation, authorization checks, error message sanitization, and Cloudflare API response validation."
+      "rDNS management has moved from an expanding box on the server page to its own dedicated page in both the admin and client portals, reached via a Manage Reverse DNS button on the server page (URL: /hardware/server/:id/rdns). This prepares the UI for upcoming IPv6 rDNS support, where per-server record lists can be large."
     ]
   }
 }
