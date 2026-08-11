@@ -22,6 +22,7 @@
   function ManagePanelFactory(ServerManage, RouteHelpers) {
     return function () {
       RouteHelpers.loadLang("pkg:rdns:client:ptr");
+      RouteHelpers.loadLang("pkg:rdns:client:manage");
 
       return {
         // Template URLs are not cache-busted like package JS is, so this

@@ -18,7 +18,7 @@
       title: 'Reverse DNS',
       controller: 'PkgRdnsServerPtrCtrl as vm',
       templateUrl: pkg.asset('client/ptr/manage/manage.page.html'),
-      resolve: helper.resolveFor(pkg.lang('client:ptr')),
+      resolve: helper.resolveFor(pkg.lang('client:ptr'), pkg.lang('client:manage')),
     });
   }
 })();

@@ -9,12 +9,12 @@ doctype html
       .loader
       .panel-heading
         h3.panel-title
-          span(translate="pkg.rdns.client.ptr.manage.TITLE")
+          span(translate="pkg.rdns.client.manage.TITLE")
           small(ng-if="vm.server.name" style="margin-left: 8px" ng-bind="vm.server.name")
         .btn-group.btn-group-xs.pull-right
           a.btn.btn-default(ui-sref="app.hardware.server.view.manage({id: vm.serverId})")
             span.fa.fa-arrow-left
-            span(translate="pkg.rdns.client.ptr.manage.BACK" style="margin-left: 4px")
+            span(translate="pkg.rdns.client.manage.BACK" style="margin-left: 4px")
       .panel-body
         table.table(ng-if="vm.ptrs.length")
           thead

@@ -10,6 +10,7 @@
    */
   function ServerPtrPageCtrl(Api, $stateParams, RouteHelpers, _, Loader) {
     RouteHelpers.loadLang("pkg:rdns:client:ptr");
+    RouteHelpers.loadLang("pkg:rdns:client:manage");
     var vm = this;
     vm.serverId = $stateParams.id;
     vm.server = {};
