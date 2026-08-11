@@ -17,7 +17,9 @@
       url: '/rdns',
       title: 'Reverse DNS',
       controller: 'PkgRdnsServerPtrCtrl as vm',
-      templateUrl: pkg.asset('client/ptr/manage/manage.page.html'),
+      // The ?v= busts browser/proxy caches (template URLs get no md5sum
+      // like package JS does); bump it whenever the template changes.
+      templateUrl: pkg.asset('client/ptr/manage/manage.page.html') + '?v=3.1.0',
       resolve: helper.resolveFor(pkg.lang('client:ptr'), pkg.lang('client:manage')),
     });
   }

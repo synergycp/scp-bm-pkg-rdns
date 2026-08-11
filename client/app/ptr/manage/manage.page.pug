@@ -16,19 +16,19 @@ doctype html
                     span.fa.fa-arrow-left
                     span(translate="pkg.rdns.client.manage.BACK" style="margin-left: 4px")
         .panel-body
-            ul.nav.nav-tabs(style="margin-bottom: 12px")
+            ul.nav.nav-tabs(ng-if="vm.hasV6" style="margin-bottom: 12px")
                 li(ng-class="{active: vm.tab == 'v4'}")
                     a(href="" ng-click="vm.setTab('v4')") IPv4 ({{vm.tabs.v4.rows.length}})
                 li(ng-class="{active: vm.tab == 'v6'}")
                     a(href="" ng-click="vm.setTab('v6')") IPv6 ({{vm.tabs.v6.rows.length}})
-            table.table(ng-if="vm.tabs[vm.tab].rows.length")
+            table.table(ng-if="vm.tab == 'v4' && vm.tabs.v4.rows.length")
                 thead
                     tr
                         th(translate="pkg.rdns.client.ptr.form.list.ip.LABEL")
                         th(translate="pkg.rdns.client.ptr.form.list.ptr.LABEL")
                 tbody
                     tr(
-                        ng-repeat="ptr in vm.tabs[vm.tab].rows | limitTo : vm.pageSize : (vm.tabs[vm.tab].page - 1) * vm.pageSize"
+                        ng-repeat="ptr in vm.tabs.v4.rows | limitTo : vm.pageSize : (vm.tabs.v4.page - 1) * vm.pageSize"
                     )
                         td.v-mid(ng-bind="ptr.ip")
                         td
@@ -37,10 +37,42 @@ doctype html
                             ng-change="vm.change(ptr)"
                             )
             span(
-                ng-if="!vm.tabs[vm.tab].rows.length"
+                ng-if="vm.tab == 'v4' && !vm.tabs.v4.rows.length"
                 translate="pkg.rdns.client.ptr.alert.alert-info"
             )
-        .panel-footer.clearfix(ng-if="vm.tabs.v4.rows.length || vm.tabs.v6.rows.length")
+            table.table(ng-if="vm.tab == 'v6'")
+                thead
+                    tr
+                        th(translate="pkg.rdns.client.ptr.form.list.ip.LABEL")
+                        th(translate="pkg.rdns.client.ptr.form.list.ptr.LABEL")
+                tbody
+                    tr(
+                        ng-repeat="ptr in vm.tabs.v6.rows | limitTo : vm.pageSize : (vm.tabs.v6.page - 1) * vm.pageSize"
+                    )
+                        td.v-mid(ng-bind="ptr.ip")
+                        td
+                            input.form-control(
+                            ng-model="ptr.ptr",
+                            ng-change="vm.change(ptr)"
+                            )
+                    tr
+                        td
+                            input.form-control(
+                            ng-model="vm.newV6.ip",
+                            ng-change="vm.v6error = null",
+                            placeholder="2605:9f80:c000:245::200"
+                            )
+                        td
+                            .input-group
+                                input.form-control(
+                                ng-model="vm.newV6.ptr",
+                                placeholder="host.example.com"
+                                )
+                                span.input-group-btn
+                                    button.btn.btn-default(type="button" ng-click="vm.addV6()")
+                                        span.fa.fa-plus
+            .text-danger(ng-if="vm.v6error" ng-bind="vm.v6error")
+        .panel-footer.clearfix(ng-if="vm.tabs.v4.rows.length || vm.tab == 'v6'")
             .pull-left(ng-if="vm.tabs[vm.tab].rows.length > vm.pageSize")
                 .btn-group.btn-group-sm
                     a.btn.btn-default(

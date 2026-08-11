@@ -59,6 +59,7 @@ Provider settings are stored in the `settings` table under the `pkg.rdns.*` name
 - `pkg.rdns.api.host` — Provider host (unused by Cloudflare)
 - `pkg.rdns.api.key` — API key / token
 - `pkg.rdns.nameservers` — Comma-separated nameservers (unused by Cloudflare; PowerDNS needs ≥ 2)
+- `pkg.rdns.ipv6.limit` — Max IPv6 PTR records a client can create per IP entity (default 20; blank falls back to 20). Enforced in `PtrUpdateService::checkIpv6Limit()` on client create only — admins and updates to existing records are exempt. IPv6 rows are counted with `LENGTH(ip) = 16` on the binary column.
 
 ## Parent App Constraints
 
@@ -87,7 +88,7 @@ Provider settings are stored in the `settings` table under the `pkg.rdns.*` name
 
 ## Admin UI Gotchas
 
-- **Template URLs are not cache-busted.** The parent app appends `?md5sum=` only to the package JS files it loads; template HTML fetched via `pkg.asset(...)` keeps a stable URL, and caching proxies (e.g. Cloudflare in front of a customer install) can serve a stale template against new JS indefinitely (symptom in 3.0.0: new panel factory + cached old template rendered a collapsed empty box). When a template's content changes, rename the file (as done for `link.panel.html`) so the URL changes.
+- **Template URLs are not cache-busted.** The parent app appends `?md5sum=` only to the package JS files it loads; template HTML fetched via `pkg.asset(...)` keeps a stable URL, and caching proxies (e.g. Cloudflare in front of a customer install) can serve a stale template against new JS indefinitely (symptom in 3.0.0: new panel factory + cached old template rendered a collapsed empty box). Package templateUrls therefore carry an explicit `?v=<semver>` suffix (see `manage.routes.js` / `manage.panel.config.js`) — bump it whenever the template content changes.
 - **Lang file URLs are not cache-busted either** (`assets/lang/en/<part>.json`, fetched by XHR — a browser hard refresh does not revalidate them). New keys added to an existing lang file show as raw key paths for clients with a cached copy (symptom in 3.0.0/3.0.1). Add new translate keys in a NEW lang part file instead (e.g. `manage.json` → part `pkg:rdns:admin:manage` → keys `pkg.rdns.admin.manage.*`); changing the text of existing keys in place is fine (stale text, not raw keys).
 
 - The SettingsTab decorator in `settings.config.js` replaces `tab.items` to hide/show fields based on the selected provider. This `ng-repeat` re-render can reset Angular form controls to `$pristine`, preventing saves. Any code that modifies `tab.items` inside `onFieldChanged` must re-mark the changed control as `$dirty` via `$setDirty()` afterward.

@@ -10,6 +10,12 @@
       "LABEL": "API Type"
     }
   },
+  "ipv6": {
+    "limit": {
+      "LABEL": "IPv6 rDNS Limit",
+      "PLACEHOLDER": "Maximum IPv6 PTR records each client can create per IP entity. Admins are not limited."
+    }
+  },
   "nameservers": {
     "LABEL": "Name Servers",
     "PLACEHOLDER": "Comma-separated list of all public-facing nameservers. The master nameserver should be listed first. Example: hostmaster.synergycp.com, ns1.synergycp.com, ns2.synergycp.com"

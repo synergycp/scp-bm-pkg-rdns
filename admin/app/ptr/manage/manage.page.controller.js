@@ -20,7 +20,10 @@
       v6: { rows: [], page: 1 },
     };
     vm.tab = "v4";
+    vm.hasV6 = false;
     vm.pageSize = 50;
+    vm.newV6 = { ip: "", ptr: "" };
+    vm.v6error = null;
     vm.loader = Loader();
     vm.change = ptrChange;
     vm.save = save;
@@ -28,6 +31,8 @@
     vm.prevPage = prevPage;
     vm.nextPage = nextPage;
     vm.pageEnd = pageEnd;
+    vm.addV6 = addV6;
+    var v6entities = [];
     var pkg = RouteHelpers.package("rdns");
     var $ptr = pkg.api().all("ptr");
 
@@ -99,11 +104,14 @@
         })
       );
 
-      // IPv6 ranges cannot be enumerated the way IPv4 ranges are, so the
-      // IPv6 tab lists single-address entities plus any existing v6 PTRs.
-      var v6ips = _.map(_.filter(entities, isSingleV6Entity), function (item) {
+      v6entities = _.map(_.filter(entities, isV6Entity), function (item) {
         return item.full_ip;
       });
+
+      // IPv6 ranges are too large to enumerate row-by-row, so the IPv6 tab
+      // lists single-address entities plus existing v6 PTRs, and new
+      // addresses are added through the add row.
+      var v6ips = _.filter(v6entities, isSingleV6);
       var v6seen = {};
       _.each(v6ips, function (ip) {
         v6seen[normalizeIp(ip)] = true;
@@ -124,6 +132,11 @@
       _.setContents(vm.tabs.v4.rows, _.map(v4ips, toRow));
       _.setContents(vm.tabs.v6.rows, v6rows);
 
+      vm.hasV6 = v6entities.length > 0 || v6rows.length > 0;
+      if (!vm.hasV6) {
+        vm.tab = "v4";
+      }
+
       function toRow(ip) {
         var ptr = _.find(ptrs, function (tt) {
           return normalizeIp(tt.ip) == normalizeIp(ip);
@@ -136,16 +149,57 @@
       }
     }
 
+    function addV6() {
+      vm.v6error = null;
+      var ip = ("" + (vm.newV6.ip || "")).trim();
+      var ptr = ("" + (vm.newV6.ptr || "")).trim();
+
+      if (!parseV6(ip)) {
+        vm.v6error = "Enter a valid IPv6 address.";
+        return;
+      }
+
+      if (!ipInV6Entities(ip)) {
+        vm.v6error = "That address is not within an IPv6 range assigned to this server.";
+        return;
+      }
+
+      var exists = _.find(vm.tabs.v6.rows, function (row) {
+        return normalizeIp(row.ip) == normalizeIp(ip);
+      });
+      if (exists) {
+        vm.v6error = "That address is already listed.";
+        return;
+      }
+
+      var row = { id: null, ip: ip, ptr: ptr };
+      vm.tabs.v6.rows.push(row);
+      if (ptr) {
+        ptrChange(row);
+      }
+      vm.hasV6 = true;
+      vm.newV6 = { ip: "", ptr: "" };
+
+      // Jump to the last page so the new row is visible.
+      vm.tabs.v6.page = Math.max(
+        1,
+        Math.ceil(vm.tabs.v6.rows.length / vm.pageSize)
+      );
+    }
+
     function isV4Entity(item) {
       return !isV6Ip(item.full_ip);
     }
 
-    function isSingleV6Entity(item) {
+    function isV6Entity(item) {
+      return isV6Ip(item.full_ip);
+    }
+
+    function isSingleV6(ip) {
       return (
-        isV6Ip(item.full_ip) &&
-        item.full_ip.indexOf("-") === -1 &&
-        item.full_ip.indexOf("*") === -1 &&
-        item.full_ip.indexOf("/") === -1
+        ip.indexOf("-") === -1 &&
+        ip.indexOf("*") === -1 &&
+        ip.indexOf("/") === -1
       );
     }
 
@@ -153,7 +207,107 @@
       return ("" + ip).indexOf(":") !== -1;
     }
 
+    /**
+     * Parses an IPv6 address into 8 group integers, or null if invalid.
+     * Dotted (IPv4-mapped) notation is not supported.
+     */
+    function parseV6(ip) {
+      if (typeof ip !== "string" || !ip || ip.indexOf(".") !== -1) {
+        return null;
+      }
+      var halves = ip.split("::");
+      if (halves.length > 2) {
+        return null;
+      }
+      var head = halves[0] === "" ? [] : halves[0].split(":");
+      var tail =
+        halves.length === 2 && halves[1] !== "" ? halves[1].split(":") : [];
+      var groups = [];
+      var i;
+      if (halves.length === 2) {
+        var missing = 8 - head.length - tail.length;
+        if (missing < 1) {
+          return null;
+        }
+        for (i = 0; i < head.length; i++) {
+          groups.push(head[i]);
+        }
+        for (i = 0; i < missing; i++) {
+          groups.push("0");
+        }
+        for (i = 0; i < tail.length; i++) {
+          groups.push(tail[i]);
+        }
+      } else {
+        groups = head;
+      }
+      if (groups.length !== 8) {
+        return null;
+      }
+      var parsed = [];
+      for (i = 0; i < 8; i++) {
+        if (!/^[0-9a-fA-F]{1,4}$/.test(groups[i])) {
+          return null;
+        }
+        parsed.push(parseInt(groups[i], 16));
+      }
+      return parsed;
+    }
+
+    /**
+     * Whether the address falls inside any of the server's IPv6 entities.
+     * Entities are matched as CIDR prefixes (or exact addresses without a
+     * prefix). If no entity is in a parseable format, the check is skipped
+     * and the API remains the authority.
+     */
+    function ipInV6Entities(ip) {
+      var parsed = parseV6(ip);
+      var parseable = 0;
+      var match = false;
+
+      _.each(v6entities, function (entity) {
+        var parts = ("" + entity).split("/");
+        var base = parseV6(parts[0]);
+        var prefix = parts.length === 2 ? parseInt(parts[1], 10) : 128;
+        if (!base || isNaN(prefix) || prefix < 0 || prefix > 128) {
+          return;
+        }
+        parseable++;
+        if (v6PrefixMatch(parsed, base, prefix)) {
+          match = true;
+        }
+      });
+
+      return parseable === 0 || match;
+    }
+
+    function v6PrefixMatch(ip, base, prefix) {
+      var bits = prefix;
+      for (var i = 0; i < 8 && bits > 0; i++) {
+        var groupBits = Math.min(16, bits);
+        var mask = (0xffff << (16 - groupBits)) & 0xffff;
+        if ((ip[i] & mask) !== (base[i] & mask)) {
+          return false;
+        }
+        bits -= groupBits;
+      }
+      return true;
+    }
+
+    /**
+     * Canonical form for comparisons: IPv6 in expanded lowercase groups so
+     * notation differences (compression, case) match; other values as
+     * lowercase text.
+     */
     function normalizeIp(ip) {
+      var parsed = parseV6("" + ip);
+      if (parsed) {
+        var out = [];
+        for (var i = 0; i < 8; i++) {
+          out.push(parsed[i].toString(16));
+        }
+        return out.join(":");
+      }
       return ("" + ip).toLowerCase();
     }
 

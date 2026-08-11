@@ -102,10 +102,47 @@ class PtrUpdateService extends UpdateService {
       abort(403, 'You do not have access to that IP.');
     }
 
+    if ($this->auth->is('client') && !$existing) {
+      $this->checkIpv6Limit($ip, $entityId);
+    }
+
     $this->successItems(
       'pkg.rdns::ptr.changed',
       $items->filter($this->changed($inputs))->reject([$this, 'isCreating']),
       ['field' => 'IP']
     );
+  }
+
+  /**
+   * Clients may only create a limited number of IPv6 PTR records per IP
+   * entity (setting pkg.rdns.ipv6.limit, default 20): IPv6 ranges are too
+   * large to enumerate, so records are created ad-hoc and need a cap.
+   * Admins are not limited. Updates to existing records are not counted.
+   *
+   * @param string $ip
+   * @param int|null $entityId
+   */
+  private function checkIpv6Limit($ip, $entityId) {
+    $binary = inet_pton($ip);
+    if ($binary === false || strlen($binary) !== 16) {
+      // Not an IPv6 address.
+      return;
+    }
+
+    $settings = app('Settings');
+    $value = $settings->{'pkg.rdns.ipv6.limit'} ?? null;
+    $limit = ($value === null || $value === '') ? 20 : (int) $value;
+
+    $count = $this->ptrs
+      ->where('entity_id', $entityId)
+      ->whereRaw('LENGTH(ip) = 16')
+      ->count();
+
+    if ($count >= $limit) {
+      abort(422, sprintf(
+        'The IPv6 rDNS limit of %d records for this IP range has been reached.',
+        $limit
+      ));
+    }
   }
 }

@@ -25,14 +25,13 @@
       RouteHelpers.loadLang("pkg:rdns:client:manage");
 
       return {
-        // Template URLs are not cache-busted like package JS is, so this
-        // file is named link.panel.html (renamed from manage.panel.html)
-        // to bypass HTTP caches that hold the pre-3.0 template. Rename it
-        // again if its content ever changes.
+        // Template URLs get no md5sum cache-busting like package JS does;
+        // the ?v= keeps browser/proxy caches from serving stale copies.
+        // Bump it whenever the template changes.
         templateUrl: RouteHelpers.trusted(
           RouteHelpers.package("rdns").asset(
             "client/ptr/manage/link.panel.html"
-          )
+          ) + "?v=3.1.0"
         ),
         context: {
           serverId: ServerManage.getServer().id,
