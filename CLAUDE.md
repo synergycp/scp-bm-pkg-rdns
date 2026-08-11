@@ -48,7 +48,10 @@ This package adds reverse DNS (PTR record) management to SynergyCP. It supports 
 - `app/Ptr/PtrService.php` — Single create/update plus `createMany()` batch import
 - `app/Ptr/Zone/ZoneController.php` — Zone file import parser
 - `app/Ptr/Events/` — Loggable events (`PtrCreated`, `PtrDeleted`, `PtrPtrUpdated`). `PtrDeleted` captures ip/ptr as scalars because the model may be gone when queued listeners run.
+- `app/Ptr/PtrUpdateService.php` — Client-side create/update rules: forward-DNS validation and the IPv6 limit (`checkIpv6Limit()`)
 - `app/Ptr/Listeners/SyncToDnsServer.php` — Queued listener that calls `createPtr()` and appends provider info to the log
+- `admin/app/ptr/manage/` — Per-server Reverse DNS page (routes, page controller with IPv4/IPv6 tabs + pagination + v6 CIDR validation, link panel). The client theme's `client/app/ptr/manage/` files are generated from the admin ones with `sed` swaps of the lang prefixes (`pkg:rdns:admin:` → `pkg:rdns:client:`, `pkg.rdns.admin.` → `pkg.rdns.client.`) — edit admin, then regenerate, never edit both by hand.
+- `admin/resources/assets/lang/en/manage.json` (and client equivalent) — the 3.x lang part for new keys (see Admin UI Gotchas on lang caching)
 - `app/Console/SyncPtrsToProvider.php` — `rdns:sync-to-dns` artisan command to bulk-sync all PTR records to the configured provider
 - `admin/app/settings.config.js` — SettingsTab decorator for conditional field visibility
 - `database/migrations/` — Schema and settings migrations
@@ -84,8 +87,9 @@ Provider settings are stored in the `settings` table under the `pkg.rdns.*` name
 
 ## Releasing Changes
 
-- Bump the `semver` and `release_date_unix` in `scp-package.json` and add a changelog entry describing the change.
-- Pushing to `master` triggers the `Build and Deploy Package` GitHub Actions workflow, which builds the frontend, writes package metadata to a Cloudflare D1 database, uploads the tarball to R2, and purges the CDN cache. The D1 step SQL-escapes metadata values (doubled single quotes) — keep it that way; an unescaped apostrophe in a changelog entry once broke the deploy.
+- Bump the `semver` and `release_date_unix` in `scp-package.json` and add a changelog entry describing the change. When a page template's content changes, also bump its `?v=` suffix (see Admin UI Gotchas).
+- `scp-package.json` must include `min_app_ver` (currently `5.4.0`) — the D1 `packages` table has a NOT NULL `min_app_ver` column and the workflow's INSERT writes it; removing the key breaks the deploy.
+- Pushing to `master` triggers the `Build and Deploy Package` GitHub Actions workflow, which builds the frontend, writes package metadata to a Cloudflare D1 database, uploads the tarball to R2, and purges the CDN cache for both the tarball and the packages API metadata URL (the API edge-caches responses for an hour; without the purge, upgrades lag). The D1 step SQL-escapes metadata values (doubled single quotes) — keep it that way; an unescaped apostrophe in a changelog entry once broke the deploy.
 - The tarball excludes `.git`, `.github`, `CLAUDE.md`, `node_modules`, and `vendor`; `README.md` ships to customers.
 
 ## Admin UI Gotchas

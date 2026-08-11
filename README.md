@@ -16,6 +16,10 @@ You can host a DNS server that answers with the hostname of the IP address that 
 - Import BIND-style reverse zone files: standard `in-addr.arpa` and `ip6.arpa` zones of any size, as well as bulk multi-zone dumps with fully-qualified record names. Imports are batched for speed and report added, updated, and unchanged counts.
 - Migrate between DNS providers with the `rdns:sync-to-dns` artisan command, which re-syncs every stored PTR to the currently configured provider.
 - Clients validate against forward DNS (the hostname must have a matching A/AAAA record) before their PTR changes are accepted.
+- The rDNS PTRs list shows which server each IP belongs to, linking to that server.
+- Wiping a server or deleting an IP entity automatically removes its IPv4 and IPv6 PTR records from SynergyCP and from the DNS provider.
+
+Package version 3.x requires SynergyCP 5.4.0 or later.
 
 ## Setup
 
